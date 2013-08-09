@@ -10,12 +10,14 @@ import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
@@ -160,8 +162,17 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public boolean func_130002_c(EntityPlayer par1EntityPlayer)
 	{
 		Block block = Block.blocksList[blockWorld.getBlockId(blockX, blockY, blockZ)];
+		ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
 		if(block != null) {
-			return block.onBlockActivated(blockWorld, blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
+			Boolean bool = block.onBlockActivated(blockWorld, blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
+			System.out.println(String.valueOf(bool));
+			System.out.println(String.valueOf(item));
+			if(!bool && item != null) {
+				return item.getItem().onItemUse(item, par1EntityPlayer, blockWorld, blockX, blockY, blockZ, 0, 0, 0, 0);
+			}
+			return bool;
+		} else if(item != null){
+			return item.getItem().onItemUse(item, par1EntityPlayer, blockWorld, blockX, blockY, blockZ, 0, 0, 0, 0);
 		}
 		return false;
 	}
@@ -172,7 +183,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
 	{
-		par1NBTTagCompound.setInteger("ID", this.blockX);
+		par1NBTTagCompound.setInteger("ID", this.id);
 		par1NBTTagCompound.setInteger("BlockX", this.blockX);
 		par1NBTTagCompound.setInteger("BlockY", this.blockY);
 		par1NBTTagCompound.setInteger("BlockZ", this.blockZ);
@@ -184,7 +195,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
 	{
-		this.blockX = par1NBTTagCompound.getInteger("ID");
+		this.id = par1NBTTagCompound.getInteger("ID");
 		this.blockX = par1NBTTagCompound.getInteger("BlockX");
 		this.blockY = par1NBTTagCompound.getInteger("BlockY");
 		this.blockZ = par1NBTTagCompound.getInteger("BlockZ");
