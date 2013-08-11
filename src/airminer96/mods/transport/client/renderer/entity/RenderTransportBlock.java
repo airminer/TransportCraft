@@ -1,13 +1,12 @@
 package airminer96.mods.transport.client.renderer.entity;
 
-import java.lang.reflect.Method;
-
 import airminer96.mods.transport.entity.EntityTransportBlock;
 import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
@@ -16,14 +15,17 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Timer;
+import net.minecraft.util.Vec3;
+
 import org.lwjgl.opengl.GL11;
 
 @SideOnly(Side.CLIENT)
 public class RenderTransportBlock extends Render {
+
+	Timer timer = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "timer");
 
 	/**
 	 * The actual render method that is used in doRender
@@ -74,53 +76,22 @@ public class RenderTransportBlock extends Render {
 
 		MovingObjectPosition objectMouseOver = Minecraft.getMinecraft().objectMouseOver;
 		if (objectMouseOver != null && objectMouseOver.entityHit == par1EntityAircraftBlock) {
-			drawOutlinedBoundingBox(par1EntityAircraftBlock.getBoundingBox().expand(0.002, 0.002, 0.002));
+
+			WorldClient theWorld = Minecraft.getMinecraft().theWorld;
+			Minecraft.getMinecraft().theWorld = (WorldClient) par1EntityAircraftBlock.blockWorld;
+
+			GL11.glPushMatrix();
+			GL11.glTranslated(par1EntityAircraftBlock.posX - par1EntityAircraftBlock.blockX - 0.5, par1EntityAircraftBlock.posY - par1EntityAircraftBlock.blockY, par1EntityAircraftBlock.posZ - par1EntityAircraftBlock.blockZ - 0.5);
+
+			Minecraft.getMinecraft().renderGlobal.drawSelectionBox(Minecraft.getMinecraft().thePlayer, new MovingObjectPosition(par1EntityAircraftBlock.blockX, par1EntityAircraftBlock.blockY, par1EntityAircraftBlock.blockZ, 0, Vec3.createVectorHelper(par1EntityAircraftBlock.blockX, par1EntityAircraftBlock.blockY, par1EntityAircraftBlock.blockZ)), 0, timer.renderPartialTicks);
+
+			GL11.glPopMatrix();
+
+			Minecraft.getMinecraft().theWorld = theWorld;
 		}
 
 		// GL11.glPopMatrix();
 
-	}
-
-	/**
-	 * Draws lines for the edges of the bounding box.
-	 */
-	private void drawOutlinedBoundingBox(AxisAlignedBB par1AxisAlignedBB) {
-		GL11.glPushMatrix();
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.4F);
-		GL11.glLineWidth(2.0F);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		GL11.glDepthMask(false);
-		Tessellator tessellator = Tessellator.instance;
-		tessellator.startDrawing(3);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.minY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.minY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.minY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.minY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.minY, par1AxisAlignedBB.minZ);
-		tessellator.draw();
-		tessellator.startDrawing(3);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.minZ);
-		tessellator.draw();
-		tessellator.startDrawing(1);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.minY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.minY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.minZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.minY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.maxX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.minY, par1AxisAlignedBB.maxZ);
-		tessellator.addVertex(par1AxisAlignedBB.minX, par1AxisAlignedBB.maxY, par1AxisAlignedBB.maxZ);
-		tessellator.draw();
-		GL11.glDepthMask(true);
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glPopMatrix();
 	}
 
 	/**
