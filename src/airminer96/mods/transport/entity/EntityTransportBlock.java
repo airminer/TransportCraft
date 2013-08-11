@@ -22,7 +22,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.DamageSource;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
@@ -36,7 +35,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	public EntityTransportBlock(World par1World) {
 		super(par1World);
-		this.setSize(1F, 1F);
+		setSize(1F, 1F);
 		blockWorld = worldObj;
 	}
 
@@ -63,19 +62,19 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 			e.printStackTrace();
 		}
 		blockWorld = worldObj;
-		this.blockX = par8;
-		this.blockY = par9;
-		this.blockZ = par10;
-		this.preventEntitySpawning = true;
-		this.setSize(1F, 1F);
+		blockX = par8;
+		blockY = par9;
+		blockZ = par10;
+		preventEntitySpawning = true;
+		setSize(1F, 1F);
 		// this.yOffset = this.height / 2.0F;
-		this.setPosition(par2, par4, par6);
-		this.motionX = 0.0D;
-		this.motionY = 0.0D;
-		this.motionZ = 0.0D;
-		this.prevPosX = par2;
-		this.prevPosY = par4;
-		this.prevPosZ = par6;
+		setPosition(par2, par4, par6);
+		motionX = 0.0D;
+		motionY = 0.0D;
+		motionZ = 0.0D;
+		prevPosX = par2;
+		prevPosY = par4;
+		prevPosZ = par6;
 	}
 
 	public World getBlockWorld() {
@@ -101,7 +100,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public boolean canBeCollidedWith() {
-		return !this.isDead;
+		return !isDead;
 	}
 
 	/**
@@ -121,7 +120,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public AxisAlignedBB getBoundingBox() {
 		Block block = Block.blocksList[blockWorld.getBlockId(blockX, blockY, blockZ)];
 		if (block != null && block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ) != null) {
-			this.setSize((float) (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float) (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));
+			setSize((float) (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float) (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));
 			return block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
 		}
 		return null;
@@ -143,6 +142,8 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public void onUpdate() {
 		// this.setDead();
 		// this.setRotation(0, 0);
+		// this.setRotation(rotationYaw + 1, 0);
+		// this.setRotation(0, rotationPitch + 1);
 	}
 
 	/**
@@ -161,10 +162,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	protected void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
-		par1NBTTagCompound.setInteger("ID", this.id);
-		par1NBTTagCompound.setInteger("BlockX", this.blockX);
-		par1NBTTagCompound.setInteger("BlockY", this.blockY);
-		par1NBTTagCompound.setInteger("BlockZ", this.blockZ);
+		par1NBTTagCompound.setInteger("ID", id);
+		par1NBTTagCompound.setInteger("BlockX", blockX);
+		par1NBTTagCompound.setInteger("BlockY", blockY);
+		par1NBTTagCompound.setInteger("BlockZ", blockZ);
 	}
 
 	/**
@@ -172,10 +173,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
-		this.id = par1NBTTagCompound.getInteger("ID");
-		this.blockX = par1NBTTagCompound.getInteger("BlockX");
-		this.blockY = par1NBTTagCompound.getInteger("BlockY");
-		this.blockZ = par1NBTTagCompound.getInteger("BlockZ");
+		id = par1NBTTagCompound.getInteger("ID");
+		blockX = par1NBTTagCompound.getInteger("BlockX");
+		blockY = par1NBTTagCompound.getInteger("BlockY");
+		blockZ = par1NBTTagCompound.getInteger("BlockZ");
 
 	}
 
@@ -203,7 +204,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	@SideOnly(Side.CLIENT)
 	public World getWorld() {
-		return this.worldObj;
+		return worldObj;
 	}
 
 	@Override
