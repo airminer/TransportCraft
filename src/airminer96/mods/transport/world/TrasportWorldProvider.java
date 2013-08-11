@@ -10,8 +10,7 @@ public class TrasportWorldProvider extends WorldProvider {
 	}
 
 	@Override
-	public String getSaveFolder()
-	{
+	public String getSaveFolder() {
 		return "Transport" + ((TransportWorldServer) worldObj).entity.id;
 	}
 

@@ -20,8 +20,8 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.EntityRegistry;
 
-@Mod(modid=Transport.ID, name=Transport.ID, version=Transport.VERSION)
-@NetworkMod(clientSideRequired=true, serverSideRequired=false, channels={Transport.ID})
+@Mod(modid = Transport.ID, name = Transport.ID, version = Transport.VERSION)
+@NetworkMod(clientSideRequired = true, serverSideRequired = false, channels = { Transport.ID })
 public class Transport {
 
 	public static final String ID = "TransportCraft";
@@ -30,7 +30,7 @@ public class Transport {
 	@Instance(Transport.ID)
 	public static Transport instance;
 
-	@SidedProxy(clientSide="airminer96.mods.transport.client.ClientProxy", serverSide="airminer96.mods.transport.CommonProxy")
+	@SidedProxy(clientSide = "airminer96.mods.transport.client.ClientProxy", serverSide = "airminer96.mods.transport.CommonProxy")
 	public static CommonProxy proxy;
 
 	public static Logger logger;
@@ -45,7 +45,7 @@ public class Transport {
 
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
-		EntityRegistry.registerModEntity(EntityTransportBlock.class,"EntityAircraftBlock", 1, instance, 250,5, true);
+		EntityRegistry.registerModEntity(EntityTransportBlock.class, "EntityAircraftBlock", 1, instance, 250, 5, true);
 		proxy.registerRenderers();
 		MinecraftForge.EVENT_BUS.register(this);
 	}

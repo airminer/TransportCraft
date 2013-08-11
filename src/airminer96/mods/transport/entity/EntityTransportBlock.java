@@ -15,16 +15,18 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 
-public class EntityTransportBlock extends Entity implements IEntityAdditionalSpawnData
-{
+public class EntityTransportBlock extends Entity implements IEntityAdditionalSpawnData {
 	public int blockX;
 	public int blockY;
 	public int blockZ;
@@ -32,22 +34,20 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	private int dimID;
 	public World blockWorld;
 
-	public EntityTransportBlock(World par1World)
-	{
+	public EntityTransportBlock(World par1World) {
 		super(par1World);
 		this.setSize(1F, 1F);
 		blockWorld = worldObj;
 	}
 
-	public EntityTransportBlock(World par1World, double par2, double par4, double par6, int par8, int par9, int par10)
-	{
+	public EntityTransportBlock(World par1World, double par2, double par4, double par6, int par8, int par9, int par10) {
 		super(par1World);
 		File lastID = new File((File) ObfuscationReflectionHelper.getPrivateValue(MinecraftServer.class, MinecraftServer.getServer(), "anvilFile"), MinecraftServer.getServer().getFolderName() + "/TransportID");
 		if (lastID.exists()) {
 			try {
-			BufferedReader reader = new BufferedReader(new FileReader(lastID)); 
-			id = Integer.parseInt(reader.readLine()) + 1;
-			reader.close();
+				BufferedReader reader = new BufferedReader(new FileReader(lastID));
+				id = Integer.parseInt(reader.readLine()) + 1;
+				reader.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -68,7 +68,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		this.blockZ = par10;
 		this.preventEntitySpawning = true;
 		this.setSize(1F, 1F);
-		//this.yOffset = this.height / 2.0F;
+		// this.yOffset = this.height / 2.0F;
 		this.setPosition(par2, par4, par6);
 		this.motionX = 0.0D;
 		this.motionY = 0.0D;
@@ -83,34 +83,34 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	/**
-	 * returns if this entity triggers Block.onEntityWalking on the blocks they walk on. used for spiders and wolves to
-	 * prevent them from trampling crops
+	 * returns if this entity triggers Block.onEntityWalking on the blocks they
+	 * walk on. used for spiders and wolves to prevent them from trampling crops
 	 */
 	@Override
-	protected boolean canTriggerWalking()
-	{
+	protected boolean canTriggerWalking() {
 		return false;
 	}
 
 	@Override
-	protected void entityInit() {}
+	protected void entityInit() {
+	}
 
 	/**
-	 * Returns true if other Entities should be prevented from moving through this Entity.
+	 * Returns true if other Entities should be prevented from moving through
+	 * this Entity.
 	 */
 	@Override
-	public boolean canBeCollidedWith()
-	{
+	public boolean canBeCollidedWith() {
 		return !this.isDead;
 	}
 
 	/**
-	 * Returns a boundingBox used to collide the entity with other entities and blocks. This enables the entity to be
-	 * pushable on contact, like boats or minecarts.
+	 * Returns a boundingBox used to collide the entity with other entities and
+	 * blocks. This enables the entity to be pushable on contact, like boats or
+	 * minecarts.
 	 */
 	@Override
-	public AxisAlignedBB getCollisionBox(Entity par1Entity)
-	{
+	public AxisAlignedBB getCollisionBox(Entity par1Entity) {
 		return par1Entity.boundingBox;
 	}
 
@@ -118,22 +118,21 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 * returns the bounding box for this entity
 	 */
 	@Override
-	public AxisAlignedBB getBoundingBox()
-	{
+	public AxisAlignedBB getBoundingBox() {
 		Block block = Block.blocksList[blockWorld.getBlockId(blockX, blockY, blockZ)];
-		if(block != null && block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ) != null) {			
-			this.setSize((float)(block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float)(block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));					
+		if (block != null && block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ) != null) {
+			this.setSize((float) (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float) (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));
 			return block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
 		}
 		return null;
 	}
 
 	/**
-	 * Returns true if this entity should push and be pushed by other entities when colliding.
+	 * Returns true if this entity should push and be pushed by other entities
+	 * when colliding.
 	 */
 	@Override
-	public boolean canBePushed()
-	{
+	public boolean canBePushed() {
 		return true;
 	}
 
@@ -141,48 +140,27 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 * Called to update the entity's position/logic.
 	 */
 	@Override
-	public void onUpdate()
-	{
-		//this.setDead();
-		/*
-        if (this.blockID == 0)
-        {
-           this.setDead();
-        }
-        else
-        {
-            this.setRotation(rotationYaw + 10, rotationPitch + 10);
-        }*/
+	public void onUpdate() {
+		// this.setDead();
+		// this.setRotation(0, 0);
 	}
 
 	/**
-	 * Called when a player interacts with a mob. e.g. gets milk from a cow, gets into the saddle on a pig.
+	 * Called when a player interacts with a mob. e.g. gets milk from a cow,
+	 * gets into the saddle on a pig.
 	 */
 	@Override
-	public boolean func_130002_c(EntityPlayer par1EntityPlayer)
-	{
+	public boolean func_130002_c(EntityPlayer par1EntityPlayer) {
 		Block block = Block.blocksList[blockWorld.getBlockId(blockX, blockY, blockZ)];
 		ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
-		if(block != null) {
-			Boolean bool = block.onBlockActivated(blockWorld, blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
-			System.out.println(String.valueOf(bool));
-			System.out.println(String.valueOf(item));
-			if(!bool && item != null) {
-				return item.getItem().onItemUse(item, par1EntityPlayer, blockWorld, blockX, blockY, blockZ, 0, 0, 0, 0);
-			}
-			return bool;
-		} else if(item != null){
-			return item.getItem().onItemUse(item, par1EntityPlayer, blockWorld, blockX, blockY, blockZ, 0, 0, 0, 0);
-		}
-		return false;
+		return Minecraft.getMinecraft().playerController.onPlayerRightClick(par1EntityPlayer, blockWorld, item, blockX, blockY, blockZ, 0, Vec3.createVectorHelper(blockX, blockY, blockZ));
 	}
 
 	/**
 	 * (abstract) Protected helper method to write subclass entity data to NBT.
 	 */
 	@Override
-	protected void writeEntityToNBT(NBTTagCompound par1NBTTagCompound)
-	{
+	protected void writeEntityToNBT(NBTTagCompound par1NBTTagCompound) {
 		par1NBTTagCompound.setInteger("ID", this.id);
 		par1NBTTagCompound.setInteger("BlockX", this.blockX);
 		par1NBTTagCompound.setInteger("BlockY", this.blockY);
@@ -193,8 +171,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 * (abstract) Protected helper method to read subclass entity data from NBT.
 	 */
 	@Override
-	protected void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
-	{
+	protected void readEntityFromNBT(NBTTagCompound par1NBTTagCompound) {
 		this.id = par1NBTTagCompound.getInteger("ID");
 		this.blockX = par1NBTTagCompound.getInteger("BlockX");
 		this.blockY = par1NBTTagCompound.getInteger("BlockY");
@@ -220,25 +197,21 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	@Override
 	@SideOnly(Side.CLIENT)
-	public float getShadowSize()
-	{
+	public float getShadowSize() {
 		return 0.0F;
 	}
 
 	@SideOnly(Side.CLIENT)
-	public World getWorld()
-	{
+	public World getWorld() {
 		return this.worldObj;
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
-
 	/**
 	 * Return whether this entity should be rendered as on fire.
 	 */
-	public boolean canRenderOnFire()
-	{
+	public boolean canRenderOnFire() {
 		return false;
 	}
 
