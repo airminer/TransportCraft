@@ -1,7 +1,6 @@
 package airminer96.mods.transport.client.renderer.entity;
 
 import airminer96.mods.transport.entity.EntityTransportBlock;
-import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -17,7 +16,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Timer;
 import net.minecraft.util.Vec3;
 
 import org.lwjgl.opengl.GL11;
@@ -25,14 +23,12 @@ import org.lwjgl.opengl.GL11;
 @SideOnly(Side.CLIENT)
 public class RenderTransportBlock extends Render {
 
-	Timer timer = ObfuscationReflectionHelper.getPrivateValue(Minecraft.class, Minecraft.getMinecraft(), "timer");
-
 	/**
 	 * The actual render method that is used in doRender
 	 */
 	public void doRenderAircraftBlock(EntityTransportBlock par1EntityTransportBlock, double par2, double par4, double par6, float par8, float par9) {
 
-		renderBlocks = new RenderBlocks(par1EntityTransportBlock.worldObj);
+		renderBlocks = new RenderBlocks(par1EntityTransportBlock.getTransportWorld().getWorld());
 		Block block = Block.blocksList[par1EntityTransportBlock.getTransportWorld().getWorld().getBlockId(par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ)];
 
 		// System.out.println(par1EntityAircraftBlock.blockWorld.getBlockId(par1EntityAircraftBlock.blockX,
@@ -66,7 +62,8 @@ public class RenderTransportBlock extends Render {
 		}
 
 		tessellator.startDrawingQuads();
-		tessellator.setTranslation(((float) par2 - (float) par1EntityTransportBlock.posX), ((float) par4 - (float) par1EntityTransportBlock.posY + 1), ((float) par6 - (float) par1EntityTransportBlock.posZ));
+		tessellator.setTranslation(((float) par2 - par1EntityTransportBlock.blockX) - 0.5, ((float) par4 - par1EntityTransportBlock.blockY), ((float) par6 - par1EntityTransportBlock.blockZ) - 0.5);
+		// tessellator.setTranslation(par2,par4,par6);
 		tessellator.setColorOpaque(1, 1, 1);
 
 		renderBlocks.renderBlockAllFaces(block, par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ);
@@ -79,16 +76,16 @@ public class RenderTransportBlock extends Render {
 		if (objectMouseOver != null && objectMouseOver.entityHit == par1EntityTransportBlock) {
 
 			WorldClient theWorld = Minecraft.getMinecraft().theWorld;
-			Minecraft.getMinecraft().theWorld = (WorldClient) par1EntityTransportBlock.getTransportWorld().getWorld();
+			Minecraft.getMinecraft().renderGlobal.theWorld = (WorldClient) par1EntityTransportBlock.getTransportWorld().getWorld();
 
 			GL11.glPushMatrix();
 			GL11.glTranslated(par1EntityTransportBlock.posX - par1EntityTransportBlock.blockX - 0.5, par1EntityTransportBlock.posY - par1EntityTransportBlock.blockY, par1EntityTransportBlock.posZ - par1EntityTransportBlock.blockZ - 0.5);
 
-			Minecraft.getMinecraft().renderGlobal.drawSelectionBox(Minecraft.getMinecraft().thePlayer, new MovingObjectPosition(par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ, 0, Vec3.createVectorHelper(par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ)), 0, timer.renderPartialTicks);
+			Minecraft.getMinecraft().renderGlobal.drawSelectionBox(Minecraft.getMinecraft().thePlayer, new MovingObjectPosition(par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ, 0, Vec3.createVectorHelper(par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ)), 0, par9);
 
 			GL11.glPopMatrix();
 
-			Minecraft.getMinecraft().theWorld = theWorld;
+			Minecraft.getMinecraft().renderGlobal.theWorld = theWorld;
 		}
 
 		GL11.glPopMatrix();

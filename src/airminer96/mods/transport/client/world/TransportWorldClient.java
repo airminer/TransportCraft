@@ -4,16 +4,23 @@ import airminer96.mods.transport.client.network.TransportNetClientHandler;
 import airminer96.mods.transport.world.TransportWorld;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
+import net.minecraft.world.WorldType;
+import net.minecraft.world.storage.WorldInfo;
 
 public class TransportWorldClient extends WorldClient implements TransportWorld {
 
-	private final int id;
+	public TransportWorldClient(int dim) {
+		super(TransportNetClientHandler.getNewInstance(), getWorldSettings(), dim, Minecraft.getMinecraft().theWorld.difficultySetting, Minecraft.getMinecraft().mcProfiler, Minecraft.getMinecraft().getLogAgent());
+	}
 
-	public TransportWorldClient(int id, int dim) {
-		super(TransportNetClientHandler.getNewInstance(), new WorldSettings(Minecraft.getMinecraft().theWorld.getWorldInfo()), dim, Minecraft.getMinecraft().theWorld.difficultySetting, Minecraft.getMinecraft().mcProfiler, Minecraft.getMinecraft().getLogAgent());
-		this.id = id;
+	private static WorldSettings getWorldSettings() {
+		WorldInfo worldInfo = new WorldInfo(Minecraft.getMinecraft().theWorld.getWorldInfo());
+		worldInfo.setTerrainType(WorldType.FLAT);
+		worldInfo.setSpawnPosition(0, 0, 0);
+		return new WorldSettings(worldInfo).func_82750_a("2;0;1;");
 	}
 
 	/**
@@ -25,8 +32,8 @@ public class TransportWorldClient extends WorldClient implements TransportWorld 
 	}
 
 	@Override
-	public int getID() {
-		return id;
+	public int getSkyBlockTypeBrightness(EnumSkyBlock par1EnumSkyBlock, int par2, int par3, int par4) {
+		return 15;
 	}
 
 	@Override

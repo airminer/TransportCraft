@@ -11,7 +11,7 @@ public class TransportWorldProvider extends WorldProvider {
 
 	@Override
 	public String getSaveFolder() {
-		return "Transport" + ((TransportWorld) worldObj).getID();
+		return "Transport" + TransportWorld.worldIDs.get(dimensionId);
 	}
 
 }

@@ -1,10 +1,7 @@
 package airminer96.mods.transport.entity;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.BitSet;
 
 import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.client.world.TransportWorldClient;
@@ -21,16 +18,19 @@ import com.google.common.io.ByteArrayDataOutput;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
 public class EntityTransportBlock extends Entity implements IEntityAdditionalSpawnData {
-	private int id = 0;
-	private int dimID = 0;
+
+	public static BitSet entityMap = new BitSet(Long.SIZE << 4);
+
+	private int id;
+	private int dimID;
 	public int blockX;
 	public int blockY;
 	public int blockZ;
@@ -43,32 +43,29 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	public EntityTransportBlock(World par1World, double par2, double par4, double par6, int par8, int par9, int par10) {
 		super(par1World);
-		File lastID = new File(DimensionManager.getCurrentSaveRootDirectory(), "TransportID");
-		if (lastID.exists()) {
-			try {
-				BufferedReader reader = new BufferedReader(new FileReader(lastID));
-				id = Integer.parseInt(reader.readLine()) + 1;
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			id = 0;
+		id = getNextFreeID();
+		Transport.logger.info("EntityTransportBlock id " + id + " spawned");
+
+		// blockX = par8;
+		// blockY = par9;
+		// blockZ = par10;
+
+		blockX = 0;
+		blockY = 128;
+		blockZ = 0;
+		getTransportWorld().getWorld().setBlock(blockX, blockY, blockZ, par1World.getBlockId(par8, par9, par10), par1World.getBlockMetadata(par8, par9, par10), 2);
+		TileEntity original = par1World.getBlockTileEntity(par8, par9, par10);
+		if (original != null) {
+			NBTTagCompound compound = new NBTTagCompound();
+			original.writeToNBT(compound);
+			TileEntity clone = TileEntity.createAndLoadEntity(compound);
+			getTransportWorld().getWorld().setBlockTileEntity(blockX, blockY, blockZ, clone);
+			clone.updateContainingBlockInfo();
 		}
-		FileWriter writer;
-		try {
-			writer = new FileWriter(lastID);
-			writer.write(String.valueOf(id));
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		blockX = par8;
-		blockY = par9;
-		blockZ = par10;
+
 		preventEntitySpawning = true;
 		setSize(1F, 1F);
-		yOffset = height / 2.0F;
+		// yOffset = height / 2.0F;
 		setPosition(par2, par4, par6);
 		motionX = 0.0D;
 		motionY = 0.0D;
@@ -78,10 +75,27 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		prevPosZ = par6;
 	}
 
+	private static int getNextFreeID() {
+		int next = 0;
+		while (true) {
+			next = entityMap.nextClearBit(next);
+			if ((new File(DimensionManager.getCurrentSaveRootDirectory(), "Transport" + next)).exists()) {
+				entityMap.set(next);
+			} else {
+				return next;
+			}
+		}
+	}
+
 	public TransportWorld getTransportWorld() {
 		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
 			if (worldClient == null) {
-				worldClient = new TransportWorldClient(id, dimID);
+				try {
+					DimensionManager.registerDimension(dimID, Transport.providerID);
+				} catch (IllegalArgumentException e) {
+				}
+				TransportWorld.worldIDs.put(dimID, id);
+				worldClient = new TransportWorldClient(dimID);
 			}
 			return worldClient;
 		} else {
@@ -90,6 +104,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 				DimensionManager.registerDimension(dimID, Transport.providerID);
 			}
 			if (DimensionManager.getWorld(dimID) == null) {
+				TransportWorld.worldIDs.put(dimID, id);
 				TransportWorldServer.initDimension(id, dimID);
 			}
 			return (TransportWorld) DimensionManager.getWorld(dimID);
@@ -115,6 +130,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void setDead() {
 		if (!worldObj.isRemote) {
+			Transport.deleteQueue.add(dimID);
 			DimensionManager.unloadWorld(dimID);
 		}
 		isDead = true;
@@ -196,12 +212,15 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public boolean func_130002_c(EntityPlayer par1EntityPlayer) {
 		Block block = Block.blocksList[getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ)];
-		ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
+		// ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
 		// return
 		// Minecraft.getMinecraft().playerController.onPlayerRightClick(par1EntityPlayer,
 		// blockWorld, item, blockX, blockY, blockZ, 0,
 		// Vec3.createVectorHelper(blockX, blockY, blockZ));
-		return block.onBlockActivated(getTransportWorld().getWorld(), blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
+		if (block != null) {
+			return block.onBlockActivated(getTransportWorld().getWorld(), blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
+		}
+		return false;
 	}
 
 	/**

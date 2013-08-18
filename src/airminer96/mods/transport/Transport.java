@@ -1,5 +1,8 @@
 package airminer96.mods.transport;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import net.minecraft.command.ServerCommandManager;
@@ -9,6 +12,7 @@ import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.WorldEvent;
 import airminer96.mods.transport.command.CommandTransport;
 import airminer96.mods.transport.entity.EntityTransportBlock;
+import airminer96.mods.transport.world.TransportWorld;
 import airminer96.mods.transport.world.TransportWorldProvider;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
@@ -40,6 +44,8 @@ public class Transport {
 	public static Logger logger;
 
 	public static int providerID;
+
+	public static final ArrayList<Integer> deleteQueue = new ArrayList<Integer>();
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
@@ -77,6 +83,28 @@ public class Transport {
 				DimensionManager.loadDimensionDataMap(null);
 				logger.info("Dimension " + event.world.provider.dimensionId + " unregistered");
 			} catch (IllegalArgumentException e) {
+			}
+			if (deleteQueue.contains(event.world.provider.dimensionId)) {
+				recursiveDelete(new File(DimensionManager.getCurrentSaveRootDirectory(), event.world.provider.getSaveFolder()));
+				deleteQueue.remove((Object) event.world.provider.dimensionId);
+				EntityTransportBlock.entityMap.clear(TransportWorld.worldIDs.get(event.world.provider.dimensionId));
+				TransportWorld.worldIDs.remove(event.world.provider.dimensionId);
+			}
+		}
+	}
+
+	private void recursiveDelete(File file) {
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				for (File f : file.listFiles()) {
+					recursiveDelete(f);
+				}
+			}
+			file.delete();
+			try {
+				logger.info("File " + file.getCanonicalPath() + " deleted");
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
