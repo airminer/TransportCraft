@@ -2,7 +2,7 @@ package airminer96.mods.transport.world;
 
 import net.minecraft.world.WorldProvider;
 
-public class TrasportWorldProvider extends WorldProvider {
+public class TransportWorldProvider extends WorldProvider {
 
 	@Override
 	public String getDimensionName() {
@@ -11,7 +11,7 @@ public class TrasportWorldProvider extends WorldProvider {
 
 	@Override
 	public String getSaveFolder() {
-		return "Transport" + ((TransportWorldServer) worldObj).entity.id;
+		return "Transport" + ((TransportWorld) worldObj).getID();
 	}
 
 }

@@ -1,4 +1,4 @@
-package airminer96.mods.transport.server.command;
+package airminer96.mods.transport.command;
 
 import java.util.HashMap;
 import airminer96.mods.transport.entity.EntityTransportBlock;

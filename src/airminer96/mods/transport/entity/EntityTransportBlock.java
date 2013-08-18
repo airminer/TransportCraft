@@ -6,7 +6,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import cpw.mods.fml.common.ObfuscationReflectionHelper;
+import airminer96.mods.transport.Transport;
+import airminer96.mods.transport.client.world.TransportWorldClient;
+import airminer96.mods.transport.world.TransportWorld;
+import airminer96.mods.transport.world.TransportWorldServer;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -15,33 +19,31 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 public class EntityTransportBlock extends Entity implements IEntityAdditionalSpawnData {
+	private int id = 0;
+	private int dimID = 0;
 	public int blockX;
 	public int blockY;
 	public int blockZ;
-	public int id;
-	private int dimID;
-	public World blockWorld;
+	private TransportWorldClient worldClient;
 
 	public EntityTransportBlock(World par1World) {
 		super(par1World);
 		setSize(1F, 1F);
-		blockWorld = worldObj;
 	}
 
 	public EntityTransportBlock(World par1World, double par2, double par4, double par6, int par8, int par9, int par10) {
 		super(par1World);
-		File lastID = new File((File) ObfuscationReflectionHelper.getPrivateValue(MinecraftServer.class, MinecraftServer.getServer(), "anvilFile"), MinecraftServer.getServer().getFolderName() + "/TransportID");
+		File lastID = new File(DimensionManager.getCurrentSaveRootDirectory(), "TransportID");
 		if (lastID.exists()) {
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(lastID));
@@ -61,13 +63,12 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		blockWorld = worldObj;
 		blockX = par8;
 		blockY = par9;
 		blockZ = par10;
 		preventEntitySpawning = true;
 		setSize(1F, 1F);
-		// this.yOffset = this.height / 2.0F;
+		yOffset = height / 2.0F;
 		setPosition(par2, par4, par6);
 		motionX = 0.0D;
 		motionY = 0.0D;
@@ -77,8 +78,22 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		prevPosZ = par6;
 	}
 
-	public World getBlockWorld() {
-		return null;
+	public TransportWorld getTransportWorld() {
+		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+			if (worldClient == null) {
+				worldClient = new TransportWorldClient(id, dimID);
+			}
+			return worldClient;
+		} else {
+			if (dimID == 0) {
+				dimID = DimensionManager.getNextFreeDimId();
+				DimensionManager.registerDimension(dimID, Transport.providerID);
+			}
+			if (DimensionManager.getWorld(dimID) == null) {
+				TransportWorldServer.initDimension(id, dimID);
+			}
+			return (TransportWorld) DimensionManager.getWorld(dimID);
+		}
 	}
 
 	/**
@@ -92,6 +107,34 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	@Override
 	protected void entityInit() {
+	}
+
+	/**
+	 * Will get destroyed next tick.
+	 */
+	@Override
+	public void setDead() {
+		if (!worldObj.isRemote) {
+			DimensionManager.unloadWorld(dimID);
+		}
+		isDead = true;
+	}
+
+	/**
+	 * Called when the entity is attacked.
+	 */
+	@Override
+	public boolean attackEntityFrom(DamageSource par1DamageSource, float par2) {
+		if (isEntityInvulnerable()) {
+			return false;
+		} else {
+			if (!isDead && !worldObj.isRemote) {
+				setDead();
+				setBeenAttacked();
+			}
+
+			return true;
+		}
 	}
 
 	/**
@@ -118,10 +161,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public AxisAlignedBB getBoundingBox() {
-		Block block = Block.blocksList[blockWorld.getBlockId(blockX, blockY, blockZ)];
-		if (block != null && block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ) != null) {
+		Block block = Block.blocksList[getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ)];
+		if (block != null && block.getCollisionBoundingBoxFromPool(getTransportWorld().getWorld(), blockX, blockY, blockZ) != null) {
 			setSize((float) (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float) (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));
-			return block.getCollisionBoundingBoxFromPool(blockWorld, blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
+			return block.getCollisionBoundingBoxFromPool(getTransportWorld().getWorld(), blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
 		}
 		return null;
 	}
@@ -152,9 +195,13 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public boolean func_130002_c(EntityPlayer par1EntityPlayer) {
-		Block block = Block.blocksList[blockWorld.getBlockId(blockX, blockY, blockZ)];
+		Block block = Block.blocksList[getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ)];
 		ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
-		return Minecraft.getMinecraft().playerController.onPlayerRightClick(par1EntityPlayer, blockWorld, item, blockX, blockY, blockZ, 0, Vec3.createVectorHelper(blockX, blockY, blockZ));
+		// return
+		// Minecraft.getMinecraft().playerController.onPlayerRightClick(par1EntityPlayer,
+		// blockWorld, item, blockX, blockY, blockZ, 0,
+		// Vec3.createVectorHelper(blockX, blockY, blockZ));
+		return block.onBlockActivated(getTransportWorld().getWorld(), blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
 	}
 
 	/**
@@ -183,6 +230,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void writeSpawnData(ByteArrayDataOutput data) {
 		data.writeInt(id);
+		if (dimID == 0) {
+			getTransportWorld();
+		}
+		data.writeInt(dimID);
 		data.writeInt(blockX);
 		data.writeInt(blockY);
 		data.writeInt(blockZ);
@@ -191,6 +242,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void readSpawnData(ByteArrayDataInput data) {
 		id = data.readInt();
+		dimID = data.readInt();
 		blockX = data.readInt();
 		blockY = data.readInt();
 		blockZ = data.readInt();
