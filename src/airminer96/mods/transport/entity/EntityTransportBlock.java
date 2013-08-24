@@ -2,7 +2,6 @@ package airminer96.mods.transport.entity;
 
 import java.io.File;
 import java.util.BitSet;
-
 import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.client.world.TransportWorldClient;
 import airminer96.mods.transport.world.TransportWorld;
@@ -101,11 +100,14 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		} else {
 			if (dimID == 0) {
 				dimID = DimensionManager.getNextFreeDimId();
+			}
+			try {
 				DimensionManager.registerDimension(dimID, Transport.providerID);
+			} catch (IllegalArgumentException e) {
 			}
 			if (DimensionManager.getWorld(dimID) == null) {
 				TransportWorld.worldIDs.put(dimID, id);
-				TransportWorldServer.initDimension(id, dimID);
+				TransportWorldServer.initDimension(dimID);
 			}
 			return (TransportWorld) DimensionManager.getWorld(dimID);
 		}
@@ -129,6 +131,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public void setDead() {
+		Transport.logger.info("DEAD!");
 		if (!worldObj.isRemote) {
 			Transport.deleteQueue.add(dimID);
 			DimensionManager.unloadWorld(dimID);
@@ -249,13 +252,21 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void writeSpawnData(ByteArrayDataOutput data) {
 		data.writeInt(id);
-		if (dimID == 0) {
-			getTransportWorld();
-		}
 		data.writeInt(dimID);
 		data.writeInt(blockX);
 		data.writeInt(blockY);
 		data.writeInt(blockZ);
+
+		data.writeInt(getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ));
+		data.writeInt(getTransportWorld().getWorld().getBlockMetadata(blockX, blockY, blockZ));
+
+		/*
+		 * try {
+		 * (new Packet51MapChunk(getTransportWorld().getWorld().getChunkFromChunkCoords(chunkCoordX, chunkCoordZ), true, 0)).writePacketData(data);
+		 * } catch (IOException e) {
+		 * e.printStackTrace();
+		 * }
+		 */
 	}
 
 	@Override
@@ -265,6 +276,21 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		blockX = data.readInt();
 		blockY = data.readInt();
 		blockZ = data.readInt();
+
+		((TransportWorldClient) getTransportWorld().getWorld()).doPreChunk(blockX >> 4, blockZ >> 4, true);
+		getTransportWorld().getWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
+
+		/*
+		 * WorldClient worldClient = ObfuscationReflectionHelper.getPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), "worldClient");
+		 * ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), getTransportWorld().getWorld(), "worldClient");
+		 * Packet51MapChunk packet = new Packet51MapChunk();
+		 * try {
+		 * packet.readPacketData(data);
+		 * Minecraft.getMinecraft().getNetHandler().handleMapChunk(packet);
+		 * } catch (IOException e) {
+		 * }
+		 * ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), worldClient, "worldClient");
+		 */
 	}
 
 	@Override

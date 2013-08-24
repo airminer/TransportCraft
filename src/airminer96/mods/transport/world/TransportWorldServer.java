@@ -21,7 +21,7 @@ public class TransportWorldServer extends WorldServerMulti implements TransportW
 		super(par2MinecraftServer, par3iSaveHandler, par4Str, par5, par6WorldSettings, par7WorldServer, par8Profiler, par9iLogAgent);
 	}
 
-	public static void initDimension(int id, int dim) {
+	public static void initDimension(int dim) {
 		WorldServer overworld = DimensionManager.getWorld(0);
 		if (overworld == null) {
 			throw new RuntimeException("Cannot Hotload Dim: Overworld is not Loaded!");
@@ -30,8 +30,7 @@ public class TransportWorldServer extends WorldServerMulti implements TransportW
 			DimensionManager.getProviderType(dim);
 		} catch (Exception e) {
 			System.err.println("Cannot Hotload Dim: " + e.getMessage());
-			return; // If a provider hasn't been registered then we can't
-					// hotload the dim
+			return; // If a provider hasn't been registered then we can't hotload the dim
 		}
 		MinecraftServer mcServer = overworld.getMinecraftServer();
 		ISaveHandler savehandler = overworld.getSaveHandler();

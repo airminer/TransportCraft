@@ -23,14 +23,6 @@ public class TransportWorldClient extends WorldClient implements TransportWorld 
 		return new WorldSettings(worldInfo).func_82750_a("2;0;1;");
 	}
 
-	/**
-	 * Returns the block ID at coords x,y,z
-	 */
-	@Override
-	public int getBlockId(int par1, int par2, int par3) {
-		return 1;
-	}
-
 	@Override
 	public int getSkyBlockTypeBrightness(EnumSkyBlock par1EnumSkyBlock, int par2, int par3, int par4) {
 		return 15;

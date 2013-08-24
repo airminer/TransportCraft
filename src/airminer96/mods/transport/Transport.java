@@ -87,9 +87,9 @@ public class Transport {
 			if (deleteQueue.contains(event.world.provider.dimensionId)) {
 				recursiveDelete(new File(DimensionManager.getCurrentSaveRootDirectory(), event.world.provider.getSaveFolder()));
 				deleteQueue.remove((Object) event.world.provider.dimensionId);
-				EntityTransportBlock.entityMap.clear(TransportWorld.worldIDs.get(event.world.provider.dimensionId));
-				TransportWorld.worldIDs.remove(event.world.provider.dimensionId);
 			}
+			EntityTransportBlock.entityMap.clear(TransportWorld.worldIDs.get(event.world.provider.dimensionId));
+			TransportWorld.worldIDs.remove(event.world.provider.dimensionId);
 		}
 	}
 
