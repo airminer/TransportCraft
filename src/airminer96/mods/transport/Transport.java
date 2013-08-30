@@ -12,7 +12,6 @@ import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.WorldEvent;
 import airminer96.mods.transport.command.CommandTransport;
 import airminer96.mods.transport.entity.EntityTransportBlock;
-import airminer96.mods.transport.world.TransportWorld;
 import airminer96.mods.transport.world.TransportWorldProvider;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
@@ -88,8 +87,6 @@ public class Transport {
 				recursiveDelete(new File(DimensionManager.getCurrentSaveRootDirectory(), event.world.provider.getSaveFolder()));
 				deleteQueue.remove((Object) event.world.provider.dimensionId);
 			}
-			EntityTransportBlock.entityMap.clear(TransportWorld.worldIDs.get(event.world.provider.dimensionId));
-			TransportWorld.worldIDs.remove(event.world.provider.dimensionId);
 		}
 	}
 

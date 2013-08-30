@@ -1,6 +1,7 @@
 package airminer96.mods.transport.command;
 
 import java.util.HashMap;
+
 import airminer96.mods.transport.entity.EntityTransportBlock;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -27,21 +28,11 @@ public class CommandTransport extends CommandBase {
 
 	@Override
 	public void processCommand(ICommandSender var1, String[] var2) {
-		/*
-		 * World world = ((EntityPlayerMP) var1).worldObj; EntityAircraftBlock
-		 * entity = new EntityAircraftBlock(world, 56, 56, 56, 1, 0);
-		 * world.spawnEntityInWorld(entity);
-		 */
 		if (var1 instanceof EntityPlayerMP) {
 			String username = ((EntityPlayerMP) var1).username;
 			if (!activePlayers.containsKey(username)) {
-				if (var2.length >= 3) {
-					Integer[] array = { new Integer(var2[0]), new Integer(var2[1]), new Integer(var2[2]) };
-					activePlayers.put(username, array);
-				} else {
-					activePlayers.put(username, new Integer[0]);
-				}
-				var1.sendChatToPlayer(ChatMessageComponent.func_111066_d("Rigchtclick a block to make it an entity"));
+				activePlayers.put(username, new Integer[] { 0, 0, 0, 0, 0, 0, 0 });
+				var1.sendChatToPlayer(ChatMessageComponent.func_111066_d("Mark two opposite vertices of the cuboid you want to transform"));
 			} else {
 				activePlayers.remove(username);
 				var1.sendChatToPlayer(ChatMessageComponent.func_111066_d("Action cancalled"));
@@ -51,43 +42,78 @@ public class CommandTransport extends CommandBase {
 
 	@ForgeSubscribe(priority = EventPriority.HIGHEST)
 	public void playerInteractEvent(PlayerInteractEvent event) {
-		// System.out.println("event!");
-		if (activePlayers.containsKey(event.entityPlayer.username)) {
-			/*
-			 * if
-			 * (event.action.equals(PlayerInteractEvent.Action.LEFT_CLICK_BLOCK
-			 * )) { info.setPoint1(point);
-			 * player.addChatMessage(FEChatFormatCodes.PURPLE + "Pos1 set to " +
-			 * event.x + ", " + event.y + ", " + event.z);
-			 * event.setCanceled(true); }
-			 */
-			// right Click
-			World world = event.entityPlayer.worldObj;
-			if (event.action.equals(PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) && !world.isRemote) {
-				int x;
-				int y;
-				int z;
-				Integer[] array = activePlayers.get(event.entityPlayer.username);
-				if (array.length == 3) {
-					x = array[0];
-					y = array[1];
-					z = array[2];
-				} else {
-					x = event.x;
-					y = event.y;
-					z = event.z;
-				}
-				event.setCanceled(true);
-				// world.setBlock(event.x, event.y, event.z, 0);
-				EntityTransportBlock entity = new EntityTransportBlock(world, (event.x + 0.5F), (event.y + 1F), (event.z + 0.5F), x, y, z);
-				world.spawnEntityInWorld(entity);
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d(x + " " + y + " " + z));
+		World world = event.entityPlayer.worldObj;
+		if (activePlayers.containsKey(event.entityPlayer.username) && !world.isRemote) {
+			event.setCanceled(true);
+			Integer[] array = activePlayers.get(event.entityPlayer.username);
+			if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
+				array[0] = (array[0] & 2) + 1;
+				array[1] = event.x;
+				array[2] = event.y;
+				array[3] = event.z;
+				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d("Pos1 set"));
+			} else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
+				array[0] = (array[0] & 1) + 2;
+				array[4] = event.x;
+				array[5] = event.y;
+				array[6] = event.z;
+				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d("Pos2 set"));
+			}
+			if (array[0] == 3) {
+				transformCuboid(world, array[1], array[2], array[3], array[4], array[5], array[6]);
 				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d("Action succeded."));
 				activePlayers.remove(event.entityPlayer.username);
 			}
+		}
+	}
 
+	private void transformCuboid(World world, int xa, int ya, int za, int xb, int yb, int zb) {
+
+		int id = EntityTransportBlock.getNextFreeID();
+		World blockWorld = null;
+
+		int x1, y1, z1, x2, y2, z2;
+
+		if (xa <= xb) {
+			x1 = xa;
+			x2 = xb;
+		} else {
+			x1 = xb;
+			x2 = xa;
 		}
 
+		if (ya <= yb) {
+			y1 = ya;
+			y2 = yb;
+		} else {
+			y1 = yb;
+			y2 = ya;
+		}
+
+		if (za <= zb) {
+			z1 = za;
+			z2 = zb;
+		} else {
+			z1 = zb;
+			z2 = za;
+		}
+
+		for (int x = x1; x <= x2; x++) {
+			int blockX = x - x1;
+			for (int y = y1; y <= y2; y++) {
+				int blockY = y - y1;
+				for (int z = z1; z <= z2; z++) {
+					int blockZ = z - z1;
+					EntityTransportBlock entity = new EntityTransportBlock(world, id, blockX, blockY, blockZ);
+					entity.setPosition(x + 0.5, y - y1 + y2 + 1, z + 0.5);
+					if (blockWorld == null) {
+						blockWorld = entity.getTransportWorld();
+					}
+					blockWorld.setBlock(blockX, blockY, blockZ, world.getBlockId(x, y, z), world.getBlockMetadata(x, y, z), 2);
+					world.spawnEntityInWorld(entity);
+				}
+			}
+		}
 	}
 
 	@Override

@@ -1,10 +1,12 @@
 package airminer96.mods.transport.entity;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
+
 import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.client.world.TransportWorldClient;
-import airminer96.mods.transport.world.TransportWorld;
 import airminer96.mods.transport.world.TransportWorldServer;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
@@ -18,7 +20,6 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
@@ -27,6 +28,10 @@ import net.minecraftforge.common.DimensionManager;
 public class EntityTransportBlock extends Entity implements IEntityAdditionalSpawnData {
 
 	public static BitSet entityMap = new BitSet(Long.SIZE << 4);
+
+	public static HashMap<Integer, Integer> idToDim = new HashMap<Integer, Integer>();
+	public static HashMap<Integer, Integer> dimToId = new HashMap<Integer, Integer>();
+	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
 
 	private int id;
 	private int dimID;
@@ -40,41 +45,23 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		setSize(1F, 1F);
 	}
 
-	public EntityTransportBlock(World par1World, double par2, double par4, double par6, int par8, int par9, int par10) {
-		super(par1World);
-		id = getNextFreeID();
+	public EntityTransportBlock(World entityWorld, int id, int blockX, int blockY, int blockZ) {
+		super(entityWorld);
+
+		this.id = id;
+
 		Transport.logger.info("EntityTransportBlock id " + id + " spawned");
 
-		// blockX = par8;
-		// blockY = par9;
-		// blockZ = par10;
-
-		blockX = 0;
-		blockY = 128;
-		blockZ = 0;
-		getTransportWorld().getWorld().setBlock(blockX, blockY, blockZ, par1World.getBlockId(par8, par9, par10), par1World.getBlockMetadata(par8, par9, par10), 2);
-		TileEntity original = par1World.getBlockTileEntity(par8, par9, par10);
-		if (original != null) {
-			NBTTagCompound compound = new NBTTagCompound();
-			original.writeToNBT(compound);
-			TileEntity clone = TileEntity.createAndLoadEntity(compound);
-			getTransportWorld().getWorld().setBlockTileEntity(blockX, blockY, blockZ, clone);
-			clone.updateContainingBlockInfo();
-		}
+		this.blockX = blockX;
+		this.blockY = blockY;
+		this.blockZ = blockZ;
 
 		preventEntitySpawning = true;
 		setSize(1F, 1F);
 		// yOffset = height / 2.0F;
-		setPosition(par2, par4, par6);
-		motionX = 0.0D;
-		motionY = 0.0D;
-		motionZ = 0.0D;
-		prevPosX = par2;
-		prevPosY = par4;
-		prevPosZ = par6;
 	}
 
-	private static int getNextFreeID() {
+	public static int getNextFreeID() {
 		int next = 0;
 		while (true) {
 			next = entityMap.nextClearBit(next);
@@ -86,30 +73,54 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		}
 	}
 
-	public TransportWorld getTransportWorld() {
+	public void associateDim(int dim) {
+		if (!idToEnt.containsKey(id)) {
+			idToEnt.put(id, new ArrayList<EntityTransportBlock>());
+			idToDim.put(id, dim);
+			dimToId.put(dim, id);
+		}
+		if (!idToEnt.get(id).contains(this)) {
+			idToEnt.get(id).add(this);
+		}
+	}
+
+	public void dissociateDim() {
+		idToEnt.get(id).remove(this);
+		if (idToEnt.get(id).isEmpty()) {
+			idToEnt.remove(id);
+			dimToId.remove(idToDim.get(id));
+			idToDim.remove(id);
+		}
+	}
+
+	public World getTransportWorld() {
 		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
 			if (worldClient == null) {
 				try {
 					DimensionManager.registerDimension(dimID, Transport.providerID);
 				} catch (IllegalArgumentException e) {
 				}
-				TransportWorld.worldIDs.put(dimID, id);
+				associateDim(dimID);
 				worldClient = new TransportWorldClient(dimID);
 			}
 			return worldClient;
 		} else {
 			if (dimID == 0) {
-				dimID = DimensionManager.getNextFreeDimId();
+				if (idToDim.containsKey(id)) {
+					dimID = idToDim.get(id);
+				} else {
+					dimID = DimensionManager.getNextFreeDimId();
+				}
 			}
 			try {
 				DimensionManager.registerDimension(dimID, Transport.providerID);
 			} catch (IllegalArgumentException e) {
 			}
 			if (DimensionManager.getWorld(dimID) == null) {
-				TransportWorld.worldIDs.put(dimID, id);
+				associateDim(dimID);
 				TransportWorldServer.initDimension(dimID);
 			}
-			return (TransportWorld) DimensionManager.getWorld(dimID);
+			return DimensionManager.getWorld(dimID);
 		}
 	}
 
@@ -133,8 +144,11 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public void setDead() {
 		Transport.logger.info("DEAD!");
 		if (!worldObj.isRemote) {
-			Transport.deleteQueue.add(dimID);
-			DimensionManager.unloadWorld(dimID);
+			dissociateDim();
+			if (!idToEnt.containsKey(id)) {
+				Transport.deleteQueue.add(dimID);
+				DimensionManager.unloadWorld(dimID);
+			}
 		}
 		isDead = true;
 	}
@@ -180,10 +194,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public AxisAlignedBB getBoundingBox() {
-		Block block = Block.blocksList[getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ)];
-		if (block != null && block.getCollisionBoundingBoxFromPool(getTransportWorld().getWorld(), blockX, blockY, blockZ) != null) {
+		Block block = Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)];
+		if (block != null && block.getCollisionBoundingBoxFromPool(getTransportWorld(), blockX, blockY, blockZ) != null) {
 			setSize((float) (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float) (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));
-			return block.getCollisionBoundingBoxFromPool(getTransportWorld().getWorld(), blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
+			return block.getCollisionBoundingBoxFromPool(getTransportWorld(), blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
 		}
 		return null;
 	}
@@ -214,14 +228,14 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public boolean func_130002_c(EntityPlayer par1EntityPlayer) {
-		Block block = Block.blocksList[getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ)];
+		Block block = Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)];
 		// ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
 		// return
 		// Minecraft.getMinecraft().playerController.onPlayerRightClick(par1EntityPlayer,
 		// blockWorld, item, blockX, blockY, blockZ, 0,
 		// Vec3.createVectorHelper(blockX, blockY, blockZ));
 		if (block != null) {
-			return block.onBlockActivated(getTransportWorld().getWorld(), blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
+			return block.onBlockActivated(getTransportWorld(), blockX, blockY, blockZ, par1EntityPlayer, 0, 0, 0, 0);
 		}
 		return false;
 	}
@@ -252,13 +266,14 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void writeSpawnData(ByteArrayDataOutput data) {
 		data.writeInt(id);
+		getWorld();
 		data.writeInt(dimID);
 		data.writeInt(blockX);
 		data.writeInt(blockY);
 		data.writeInt(blockZ);
 
-		data.writeInt(getTransportWorld().getWorld().getBlockId(blockX, blockY, blockZ));
-		data.writeInt(getTransportWorld().getWorld().getBlockMetadata(blockX, blockY, blockZ));
+		data.writeInt(getTransportWorld().getBlockId(blockX, blockY, blockZ));
+		data.writeInt(getTransportWorld().getBlockMetadata(blockX, blockY, blockZ));
 
 		/*
 		 * try {
@@ -277,8 +292,8 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		blockY = data.readInt();
 		blockZ = data.readInt();
 
-		((TransportWorldClient) getTransportWorld().getWorld()).doPreChunk(blockX >> 4, blockZ >> 4, true);
-		getTransportWorld().getWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
+		((TransportWorldClient) getTransportWorld()).doPreChunk(blockX >> 4, blockZ >> 4, true);
+		getTransportWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
 
 		/*
 		 * WorldClient worldClient = ObfuscationReflectionHelper.getPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), "worldClient");

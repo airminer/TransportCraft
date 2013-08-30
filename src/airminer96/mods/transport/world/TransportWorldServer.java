@@ -3,7 +3,6 @@ package airminer96.mods.transport.world;
 import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.World;
 import net.minecraft.world.WorldManager;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldServerMulti;
@@ -15,7 +14,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
-public class TransportWorldServer extends WorldServerMulti implements TransportWorld {
+public class TransportWorldServer extends WorldServerMulti {
 
 	public TransportWorldServer(MinecraftServer par2MinecraftServer, ISaveHandler par3iSaveHandler, String par4Str, int par5, WorldSettings par6WorldSettings, WorldServer par7WorldServer, Profiler par8Profiler, ILogAgent par9iLogAgent) {
 		super(par2MinecraftServer, par3iSaveHandler, par4Str, par5, par6WorldSettings, par7WorldServer, par8Profiler, par9iLogAgent);
@@ -48,11 +47,6 @@ public class TransportWorldServer extends WorldServerMulti implements TransportW
 		}
 
 		mcServer.setDifficultyForAllWorlds(mcServer.getDifficulty());
-	}
-
-	@Override
-	public World getWorld() {
-		return this;
 	}
 
 }
