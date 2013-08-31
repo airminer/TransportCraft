@@ -1,5 +1,10 @@
 package airminer96.mods.transport.world;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import airminer96.mods.transport.Transport;
 import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
@@ -16,8 +21,41 @@ import net.minecraftforge.event.world.WorldEvent;
 
 public class TransportWorldServer extends WorldServerMulti {
 
+	public static final ArrayList<Integer> deleteQueue = new ArrayList<Integer>();
+
 	public TransportWorldServer(MinecraftServer par2MinecraftServer, ISaveHandler par3iSaveHandler, String par4Str, int par5, WorldSettings par6WorldSettings, WorldServer par7WorldServer, Profiler par8Profiler, ILogAgent par9iLogAgent) {
 		super(par2MinecraftServer, par3iSaveHandler, par4Str, par5, par6WorldSettings, par7WorldServer, par8Profiler, par9iLogAgent);
+	}
+
+	@Override
+	public void flush() {
+		super.flush();
+		try {
+			DimensionManager.unregisterDimension(provider.dimensionId);
+			DimensionManager.loadDimensionDataMap(null);
+			Transport.logger.info("Dimension " + provider.dimensionId + " unregistered");
+		} catch (IllegalArgumentException e) {
+		}
+		if (deleteQueue.contains(provider.dimensionId)) {
+			recursiveDelete(new File(DimensionManager.getCurrentSaveRootDirectory(), provider.getSaveFolder()));
+			deleteQueue.remove((Object) provider.dimensionId);
+		}
+	}
+
+	private void recursiveDelete(File file) {
+		if (file.exists()) {
+			if (file.isDirectory()) {
+				for (File f : file.listFiles()) {
+					recursiveDelete(f);
+				}
+			}
+			file.delete();
+			try {
+				Transport.logger.info("File " + file.getCanonicalPath() + " deleted");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public static void initDimension(int dim) {

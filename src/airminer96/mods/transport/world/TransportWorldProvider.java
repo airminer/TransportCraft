@@ -5,6 +5,9 @@ import net.minecraft.world.WorldProvider;
 
 public class TransportWorldProvider extends WorldProvider {
 
+	int id;
+	boolean idSet = false;
+
 	@Override
 	public String getDimensionName() {
 		return "Transport World";
@@ -12,7 +15,11 @@ public class TransportWorldProvider extends WorldProvider {
 
 	@Override
 	public String getSaveFolder() {
-		return "Transport" + EntityTransportBlock.dimToId.get(dimensionId);
+		if (!idSet) {
+			id = EntityTransportBlock.dimToId.get(dimensionId);
+			idSet = true;
+		}
+		return "Transport" + id;
 	}
 
 }

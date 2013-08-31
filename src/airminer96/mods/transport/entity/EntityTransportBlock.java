@@ -146,7 +146,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		if (!worldObj.isRemote) {
 			dissociateDim();
 			if (!idToEnt.containsKey(id)) {
-				Transport.deleteQueue.add(dimID);
+				TransportWorldServer.deleteQueue.add(dimID);
 				DimensionManager.unloadWorld(dimID);
 			}
 		}
