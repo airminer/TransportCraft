@@ -33,8 +33,8 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public static HashMap<Integer, Integer> dimToId = new HashMap<Integer, Integer>();
 	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
 
-	private int id;
-	private int dimID;
+	public int id;
+	public int dimID;
 	public int blockX;
 	public int blockY;
 	public int blockZ;
@@ -49,6 +49,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		super(entityWorld);
 
 		this.id = id;
+		getTransportWorld();
 
 		Transport.logger.info("EntityTransportBlock id " + id + " spawned");
 
@@ -85,11 +86,24 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	public void dissociateDim() {
+		dissociateDim(true);
+	}
+
+	public void dissociateDim(boolean checkOthers) {
 		idToEnt.get(id).remove(this);
 		if (idToEnt.get(id).isEmpty()) {
 			idToEnt.remove(id);
 			dimToId.remove(idToDim.get(id));
 			idToDim.remove(id);
+		} else if (checkOthers) {
+			for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt.get(id).clone()) {
+				if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
+					entity.dissociateDim(false);
+					if (!idToEnt.containsKey(entity.id) && entity.id != id) {
+						DimensionManager.unloadWorld(entity.dimID);
+					}
+				}
+			}
 		}
 	}
 
@@ -266,7 +280,6 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void writeSpawnData(ByteArrayDataOutput data) {
 		data.writeInt(id);
-		getWorld();
 		data.writeInt(dimID);
 		data.writeInt(blockX);
 		data.writeInt(blockY);

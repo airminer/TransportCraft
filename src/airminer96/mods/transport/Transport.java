@@ -21,6 +21,8 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.registry.EntityRegistry;
+import cpw.mods.fml.common.registry.TickRegistry;
+import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = Transport.ID, name = Transport.ID, version = Transport.VERSION)
 @NetworkMod(clientSideRequired = true, serverSideRequired = false, channels = { Transport.ID })
@@ -53,6 +55,7 @@ public class Transport {
 		while (!DimensionManager.registerProviderType(providerID, TransportWorldProvider.class, true))
 			providerID++;
 		logger.info("TransportWorldProvider successfully registered with ID " + providerID);
+		TickRegistry.registerScheduledTickHandler(new TransportTickHandler(), Side.SERVER);
 	}
 
 	@EventHandler
