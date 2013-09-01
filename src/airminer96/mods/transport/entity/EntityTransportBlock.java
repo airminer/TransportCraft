@@ -38,7 +38,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public int blockX;
 	public int blockY;
 	public int blockZ;
-	private TransportWorldClient worldClient;
+	private World worldClient;
 
 	public EntityTransportBlock(World par1World) {
 		super(par1World);
@@ -115,7 +115,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 				} catch (IllegalArgumentException e) {
 				}
 				associateDim(dimID);
-				worldClient = new TransportWorldClient(dimID);
+				worldClient = Transport.proxy.getTransportWorldClient(dimID);
 			}
 			return worldClient;
 		} else {
@@ -130,8 +130,8 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 				DimensionManager.registerDimension(dimID, Transport.providerID);
 			} catch (IllegalArgumentException e) {
 			}
+			associateDim(dimID);
 			if (DimensionManager.getWorld(dimID) == null) {
-				associateDim(dimID);
 				TransportWorldServer.initDimension(dimID);
 			}
 			return DimensionManager.getWorld(dimID);

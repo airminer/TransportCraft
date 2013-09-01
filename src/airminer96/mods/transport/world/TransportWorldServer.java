@@ -12,9 +12,7 @@ import net.minecraft.world.WorldManager;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldServerMulti;
 import net.minecraft.world.WorldSettings;
-import net.minecraft.world.WorldType;
 import net.minecraft.world.storage.ISaveHandler;
-import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
@@ -71,11 +69,7 @@ public class TransportWorldServer extends WorldServerMulti {
 		}
 		MinecraftServer mcServer = overworld.getMinecraftServer();
 		ISaveHandler savehandler = overworld.getSaveHandler();
-
-		WorldInfo worldInfo = new WorldInfo(overworld.getWorldInfo());
-		worldInfo.setTerrainType(WorldType.FLAT);
-		worldInfo.setSpawnPosition(0, 0, 0);
-		WorldSettings worldSettings = new WorldSettings(worldInfo).func_82750_a("2;0;1;");
+		WorldSettings worldSettings = new WorldSettings(overworld.getWorldInfo());
 
 		WorldServer world = (dim == 0 ? overworld : new TransportWorldServer(mcServer, savehandler, overworld.getWorldInfo().getWorldName(), dim, worldSettings, overworld, mcServer.theProfiler, overworld.getWorldLogAgent()));
 		world.addWorldAccess(new WorldManager(mcServer, world));
