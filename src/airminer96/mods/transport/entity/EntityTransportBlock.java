@@ -32,6 +32,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public static HashMap<Integer, Integer> idToDim = new HashMap<Integer, Integer>();
 	public static HashMap<Integer, Integer> dimToId = new HashMap<Integer, Integer>();
 	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
+	public static HashMap<Integer, World> worldClients = new HashMap<Integer, World>();
 
 	public int id;
 	public int dimID;
@@ -90,17 +91,20 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	public void dissociateDim(boolean checkOthers) {
-		idToEnt.get(id).remove(this);
-		if (idToEnt.get(id).isEmpty()) {
-			idToEnt.remove(id);
-			dimToId.remove(idToDim.get(id));
-			idToDim.remove(id);
-		} else if (checkOthers) {
-			for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt.get(id).clone()) {
-				if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
-					entity.dissociateDim(false);
-					if (!idToEnt.containsKey(entity.id) && entity.id != id) {
-						DimensionManager.unloadWorld(entity.dimID);
+		if (idToEnt.containsKey(id)) {
+			idToEnt.get(id).remove(this);
+			if (idToEnt.get(id).isEmpty()) {
+				idToEnt.remove(id);
+				dimToId.remove(idToDim.get(id));
+				idToDim.remove(id);
+				worldClients.remove(id);
+			} else if (checkOthers) {
+				for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt.get(id).clone()) {
+					if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
+						entity.dissociateDim(false);
+						if (!idToEnt.containsKey(entity.id) && entity.id != id) {
+							DimensionManager.unloadWorld(entity.dimID);
+						}
 					}
 				}
 			}
@@ -110,12 +114,15 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public World getTransportWorld() {
 		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
 			if (worldClient == null) {
-				try {
-					DimensionManager.registerDimension(dimID, Transport.providerID);
-				} catch (IllegalArgumentException e) {
+				if (worldClients.get(id) == null) {
+					try {
+						DimensionManager.registerDimension(dimID, Transport.providerID);
+					} catch (IllegalArgumentException e) {
+					}
+					worldClients.put(id, Transport.proxy.getTransportWorldClient(dimID));
 				}
 				associateDim(dimID);
-				worldClient = Transport.proxy.getTransportWorldClient(dimID);
+				worldClient = worldClients.get(id);
 			}
 			return worldClient;
 		} else {
@@ -157,12 +164,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	@Override
 	public void setDead() {
 		Transport.logger.info("DEAD!");
-		if (!worldObj.isRemote) {
-			dissociateDim();
-			if (!idToEnt.containsKey(id)) {
-				TransportWorldServer.deleteQueue.add(dimID);
-				DimensionManager.unloadWorld(dimID);
-			}
+		dissociateDim();
+		if (!worldObj.isRemote && !idToEnt.containsKey(id)) {
+			TransportWorldServer.deleteQueue.add(dimID);
+			DimensionManager.unloadWorld(dimID);
 		}
 		isDead = true;
 	}
@@ -305,7 +310,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		blockY = data.readInt();
 		blockZ = data.readInt();
 
-		((TransportWorldClient) getTransportWorld()).doPreChunk(blockX >> 4, blockZ >> 4, true);
+		TransportWorldClient world = (TransportWorldClient) getTransportWorld();
+		if (world.getChunkProvider().provideChunk(blockX >> 4, blockZ >> 4).isEmpty()) {
+			world.doPreChunk(blockX >> 4, blockZ >> 4, true);
+		}
 		getTransportWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
 
 		/*
