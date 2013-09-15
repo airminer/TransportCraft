@@ -314,6 +314,16 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		if (world.getChunkProvider().provideChunk(blockX >> 4, blockZ >> 4).isEmpty()) {
 			world.doPreChunk(blockX >> 4, blockZ >> 4, true);
 		}
+		if ((blockX & 15) == 0 && world.getChunkProvider().provideChunk((blockX >> 4) - 1, blockZ >> 4).isEmpty()) {
+			world.doPreChunk((blockX >> 4) - 1, blockZ >> 4, true);
+		} else if ((blockX & 15) == 15 && world.getChunkProvider().provideChunk((blockX >> 4) + 1, blockZ >> 4).isEmpty()) {
+			world.doPreChunk((blockX >> 4) + 1, blockZ >> 4, true);
+		}
+		if ((blockZ & 15) == 0 && world.getChunkProvider().provideChunk(blockX >> 4, (blockZ >> 4) - 1).isEmpty()) {
+			world.doPreChunk(blockX >> 4, (blockZ >> 4) - 1, true);
+		} else if ((blockZ & 15) == 15 && world.getChunkProvider().provideChunk(blockX >> 4, (blockZ >> 4) + 1).isEmpty()) {
+			world.doPreChunk(blockX >> 4, (blockZ >> 4) + 1, true);
+		}
 		getTransportWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
 
 		/*

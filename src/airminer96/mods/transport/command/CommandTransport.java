@@ -99,11 +99,11 @@ public class CommandTransport extends CommandBase {
 		}
 
 		for (int x = x1; x <= x2; x++) {
-			int blockX = x - x1;
+			int blockX = x - (x1 + x2) / 2;
 			for (int y = y1; y <= y2; y++) {
-				int blockY = y - y1;
+				int blockY = 128 + y - (y1 + y2) / 2;
 				for (int z = z1; z <= z2; z++) {
-					int blockZ = z - z1;
+					int blockZ = z - (z1 + z2) / 2;
 					EntityTransportBlock entity = new EntityTransportBlock(world, id, blockX, blockY, blockZ);
 					entity.setPosition(x + 0.5, y - y1 + y2 + 1, z + 0.5);
 					if (blockWorld == null) {
