@@ -242,11 +242,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	/**
-	 * Called when a player interacts with a mob. e.g. gets milk from a cow,
-	 * gets into the saddle on a pig.
+	 * First layer of player interaction
 	 */
 	@Override
-	public boolean func_130002_c(EntityPlayer par1EntityPlayer) {
+	public boolean interactFirst(EntityPlayer par1EntityPlayer) {
 		Block block = Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)];
 		// ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
 		// return

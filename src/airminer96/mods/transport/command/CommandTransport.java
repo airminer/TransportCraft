@@ -32,10 +32,10 @@ public class CommandTransport extends CommandBase {
 			String username = ((EntityPlayerMP) var1).username;
 			if (!activePlayers.containsKey(username)) {
 				activePlayers.put(username, new Integer[] { 0, 0, 0, 0, 0, 0, 0 });
-				var1.sendChatToPlayer(ChatMessageComponent.func_111066_d("Mark two opposite vertices of the cuboid you want to transform"));
+				var1.sendChatToPlayer(ChatMessageComponent.createFromText("Mark two opposite vertices of the cuboid you want to transform"));
 			} else {
 				activePlayers.remove(username);
-				var1.sendChatToPlayer(ChatMessageComponent.func_111066_d("Action cancalled"));
+				var1.sendChatToPlayer(ChatMessageComponent.createFromText("Action cancalled"));
 			}
 		}
 	}
@@ -51,17 +51,17 @@ public class CommandTransport extends CommandBase {
 				array[1] = event.x;
 				array[2] = event.y;
 				array[3] = event.z;
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d("Pos1 set"));
+				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.createFromText("Pos1 set"));
 			} else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
 				array[0] = (array[0] & 1) + 2;
 				array[4] = event.x;
 				array[5] = event.y;
 				array[6] = event.z;
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d("Pos2 set"));
+				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.createFromText("Pos2 set"));
 			}
 			if (array[0] == 3) {
 				transformCuboid(world, array[1], array[2], array[3], array[4], array[5], array[6]);
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.func_111066_d("Action succeded."));
+				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.createFromText("Action succeded."));
 				activePlayers.remove(event.entityPlayer.username);
 			}
 		}

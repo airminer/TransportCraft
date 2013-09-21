@@ -47,7 +47,7 @@ public class RenderTransportBlock extends Render {
 		if (tileEntity != null) {
 			TileEntityRenderer.instance.renderTileEntityAt(tileEntity, par2 - 0.5D, par4, par6 - 0.5D, par9);
 		}
-		func_110776_a(TextureMap.field_110575_b);
+		bindTexture(TextureMap.locationBlocksTexture);
 
 		Tessellator tessellator = Tessellator.instance;
 		RenderHelper.disableStandardItemLighting();
@@ -106,9 +106,7 @@ public class RenderTransportBlock extends Render {
 	}
 
 	@Override
-	protected ResourceLocation func_110775_a(Entity entity) {
-		// TODO Auto-generated method stub
-		// return TextureMap.field_110575_b;
+	protected ResourceLocation getEntityTexture(Entity entity) {
 		return null;
 	}
 }
