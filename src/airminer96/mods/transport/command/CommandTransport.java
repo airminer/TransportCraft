@@ -6,6 +6,8 @@ import airminer96.mods.transport.entity.EntityTransportBlock;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatMessageComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -109,7 +111,14 @@ public class CommandTransport extends CommandBase {
 					if (blockWorld == null) {
 						blockWorld = entity.getTransportWorld();
 					}
-					blockWorld.setBlock(blockX, blockY, blockZ, world.getBlockId(x, y, z), world.getBlockMetadata(x, y, z), 2);
+					TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
+					blockWorld.setBlock(blockX, blockY, blockZ, world.getBlockId(x, y, z));
+					blockWorld.setBlockMetadataWithNotify(blockX, blockY, blockZ, world.getBlockMetadata(x, y, z), 3);
+					if (tileEntity != null) {
+						NBTTagCompound nbtTag = new NBTTagCompound();
+						tileEntity.writeToNBT(nbtTag);
+						blockWorld.setBlockTileEntity(blockX, blockY, blockZ, TileEntity.createAndLoadEntity(nbtTag));
+					}
 					world.spawnEntityInWorld(entity);
 				}
 			}
