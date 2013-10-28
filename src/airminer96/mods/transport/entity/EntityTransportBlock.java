@@ -91,6 +91,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	public void dissociateDim(boolean checkOthers) {
+		Transport.logger.info("Dissociating " + this);
 		if (idToEnt.containsKey(id)) {
 			idToEnt.get(id).remove(this);
 			if (idToEnt.get(id).isEmpty()) {
@@ -163,7 +164,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public void setDead() {
-		Transport.logger.info("DEAD!");
+		Transport.logger.info(this + " DEAD!");
 		dissociateDim();
 		if (!worldObj.isRemote && !idToEnt.containsKey(id)) {
 			TransportWorldServer.deleteQueue.add(dimID);

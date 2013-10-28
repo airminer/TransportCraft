@@ -14,10 +14,13 @@ public class TransportTickHandler implements IScheduledTickHandler {
 
 	@Override
 	public void tickStart(EnumSet<TickType> type, Object... tickData) {
+		Transport.logger.info("TICK");
 		for (Entry<Integer, ArrayList<EntityTransportBlock>> entry : ((HashMap<Integer, ArrayList<EntityTransportBlock>>) EntityTransportBlock.idToEnt.clone()).entrySet()) {
 			for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) entry.getValue().clone()) {
+				Transport.logger.info("Checking entity " + entity);
 				if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
 					entity.dissociateDim(false);
+					Transport.logger.info("Entity" + entity + " removed");
 					if (!EntityTransportBlock.idToEnt.containsKey(entity.id)) {
 						DimensionManager.unloadWorld(entity.dimID);
 					}

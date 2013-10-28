@@ -49,7 +49,7 @@ public class Transport {
 
 	@EventHandler
 	public void load(FMLInitializationEvent event) {
-		EntityRegistry.registerModEntity(EntityTransportBlock.class, "EntityAircraftBlock", 1, instance, 250, 5, true);
+		EntityRegistry.registerModEntity(EntityTransportBlock.class, "EntityTransportBlock", 1, instance, 250, 5, true);
 		proxy.registerRenderers();
 		providerID = 2;
 		while (!DimensionManager.registerProviderType(providerID, TransportWorldProvider.class, true))
