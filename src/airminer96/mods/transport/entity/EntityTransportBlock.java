@@ -31,7 +31,8 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	public static HashMap<Integer, Integer> idToDim = new HashMap<Integer, Integer>();
 	public static HashMap<Integer, Integer> dimToId = new HashMap<Integer, Integer>();
-	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
+	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEntServer = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
+	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEntClient = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
 	public static HashMap<Integer, World> worldClients = new HashMap<Integer, World>();
 
 	public int id;
@@ -74,15 +75,23 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 			}
 		}
 	}
+	
+	public HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt() {
+		if(worldObj.isRemote) {
+			return idToEntClient;
+		} else {
+			return idToEntServer;
+		}
+	}
 
 	public void associateDim(int dim) {
-		if (!idToEnt.containsKey(id)) {
-			idToEnt.put(id, new ArrayList<EntityTransportBlock>());
+		if (!idToEnt().containsKey(id)) {
+			idToEnt().put(id, new ArrayList<EntityTransportBlock>());
 			idToDim.put(id, dim);
 			dimToId.put(dim, id);
 		}
-		if (!idToEnt.get(id).contains(this)) {
-			idToEnt.get(id).add(this);
+		if (!idToEnt().get(id).contains(this)) {
+			idToEnt().get(id).add(this);
 		}
 	}
 
@@ -92,18 +101,18 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	public void dissociateDim(boolean checkOthers) {
 		Transport.logger.info("Dissociating " + this);
-		if (idToEnt.containsKey(id)) {
-			idToEnt.get(id).remove(this);
-			if (idToEnt.get(id).isEmpty()) {
-				idToEnt.remove(id);
+		if (idToEnt().containsKey(id)) {
+			idToEnt().get(id).remove(this);
+			if (idToEnt().get(id).isEmpty()) {
+				idToEnt().remove(id);
 				dimToId.remove(idToDim.get(id));
 				idToDim.remove(id);
 				worldClients.remove(id);
 			} else if (checkOthers) {
-				for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt.get(id).clone()) {
+				for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt().get(id).clone()) {
 					if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
 						entity.dissociateDim(false);
-						if (!idToEnt.containsKey(entity.id) && entity.id != id) {
+						if (!idToEnt().containsKey(entity.id) && entity.id != id) {
 							DimensionManager.unloadWorld(entity.dimID);
 						}
 					}
@@ -166,7 +175,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	public void setDead() {
 		Transport.logger.info(this + " DEAD!");
 		dissociateDim();
-		if (!worldObj.isRemote && !idToEnt.containsKey(id)) {
+		if (!worldObj.isRemote && !idToEnt().containsKey(id)) {
 			TransportWorldServer.deleteQueue.add(dimID);
 			DimensionManager.unloadWorld(dimID);
 		}

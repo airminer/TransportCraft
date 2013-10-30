@@ -21,9 +21,4 @@ public class TransportWorldClient extends WorldClient {
 		return new WorldSettings(worldInfo).func_82750_a("2;0;1;");
 	}
 
-	@Override
-	public int getSkyBlockTypeBrightness(EnumSkyBlock par1EnumSkyBlock, int par2, int par3, int par4) {
-		return super.getSkyBlockTypeBrightness(par1EnumSkyBlock, par2, par3, par4);
-	}
-
 }
