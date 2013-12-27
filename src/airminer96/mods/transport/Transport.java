@@ -72,6 +72,12 @@ public class Transport {
 
 	@EventHandler
 	public void serverStopping(FMLServerStoppingEvent event) {
+		EntityTransportBlock.idToDim.clear();
+		EntityTransportBlock.dimToId.clear();
+		EntityTransportBlock.idToEntServer.clear();
+		EntityTransportBlock.idToEntClient.clear();
+		EntityTransportBlock.worldClients.clear();
+		logger.info("EntityTransportBlock lists cleared");
 		for (int id : DimensionManager.getStaticDimensionIDs()) {
 			if (DimensionManager.getProviderType(id) == providerID) {
 				DimensionManager.unregisterDimension(id);

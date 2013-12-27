@@ -18,7 +18,7 @@ public class TransportTickHandler implements IScheduledTickHandler {
 		for (Entry<Integer, ArrayList<EntityTransportBlock>> entry : ((HashMap<Integer, ArrayList<EntityTransportBlock>>) EntityTransportBlock.idToEntServer.clone()).entrySet()) {
 			for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) entry.getValue().clone()) {
 				Transport.logger.info("Checking entity " + entity);
-				if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
+				if (entity.worldObj.getEntityByID(entity.entityId) != entity && entity.getTransportWorld().playerEntities.isEmpty()) {
 					entity.dissociateDim(false);
 					Transport.logger.info("Entity" + entity + " removed");
 					if (!EntityTransportBlock.idToEntServer.containsKey(entity.id)) {
