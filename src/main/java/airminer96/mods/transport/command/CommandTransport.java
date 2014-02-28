@@ -2,17 +2,19 @@ package airminer96.mods.transport.command;
 
 import java.util.HashMap;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import airminer96.mods.transport.entity.EntityTransportBlock;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatMessageComponent;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.EventPriority;
-import net.minecraftforge.event.ForgeSubscribe;
+//import net.minecraftforge.event.EventPriority;
+//import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 public class CommandTransport extends CommandBase {
@@ -31,40 +33,40 @@ public class CommandTransport extends CommandBase {
 	@Override
 	public void processCommand(ICommandSender var1, String[] var2) {
 		if (var1 instanceof EntityPlayerMP) {
-			String username = ((EntityPlayerMP) var1).username;
+			String username = ((EntityPlayerMP) var1).getCommandSenderName();
 			if (!activePlayers.containsKey(username)) {
 				activePlayers.put(username, new Integer[] { 0, 0, 0, 0, 0, 0, 0 });
-				var1.sendChatToPlayer(ChatMessageComponent.createFromText("Mark two opposite vertices of the cuboid you want to transform"));
+				var1.addChatMessage(new ChatComponentText("Mark two opposite vertices of the cuboid you want to transform"));
 			} else {
 				activePlayers.remove(username);
-				var1.sendChatToPlayer(ChatMessageComponent.createFromText("Action cancalled"));
+				var1.addChatMessage(new ChatComponentText("Action cancalled"));
 			}
 		}
 	}
 
-	@ForgeSubscribe(priority = EventPriority.HIGHEST)
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
 	public void playerInteractEvent(PlayerInteractEvent event) {
 		World world = event.entityPlayer.worldObj;
-		if (activePlayers.containsKey(event.entityPlayer.username) && !world.isRemote) {
+		if (activePlayers.containsKey(event.entityPlayer.getCommandSenderName()) && !world.isRemote) {
 			event.setCanceled(true);
-			Integer[] array = activePlayers.get(event.entityPlayer.username);
+			Integer[] array = activePlayers.get(event.entityPlayer.getCommandSenderName());
 			if (event.action == PlayerInteractEvent.Action.LEFT_CLICK_BLOCK) {
 				array[0] = (array[0] & 2) + 1;
 				array[1] = event.x;
 				array[2] = event.y;
 				array[3] = event.z;
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.createFromText("Pos1 set"));
+				event.entityPlayer.addChatMessage(new ChatComponentText("Pos1 set"));
 			} else if (event.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
 				array[0] = (array[0] & 1) + 2;
 				array[4] = event.x;
 				array[5] = event.y;
 				array[6] = event.z;
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.createFromText("Pos2 set"));
+				event.entityPlayer.addChatMessage(new ChatComponentText("Pos2 set"));
 			}
 			if (array[0] == 3) {
 				transformCuboid(world, array[1], array[2], array[3], array[4], array[5], array[6]);
-				event.entityPlayer.sendChatToPlayer(ChatMessageComponent.createFromText("Action succeded."));
-				activePlayers.remove(event.entityPlayer.username);
+				event.entityPlayer.addChatMessage(new ChatComponentText("Action succeded."));
+				activePlayers.remove(event.entityPlayer.getCommandSenderName());
 			}
 		}
 	}
@@ -111,13 +113,13 @@ public class CommandTransport extends CommandBase {
 					if (blockWorld == null) {
 						blockWorld = entity.getTransportWorld();
 					}
-					TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
-					blockWorld.setBlock(blockX, blockY, blockZ, world.getBlockId(x, y, z));
+					TileEntity tileEntity = world.getTileEntity(x, y, z);
+					blockWorld.setBlock(blockX, blockY, blockZ, world.getBlock(x, y, z));
 					blockWorld.setBlockMetadataWithNotify(blockX, blockY, blockZ, world.getBlockMetadata(x, y, z), 3);
 					if (tileEntity != null) {
 						NBTTagCompound nbtTag = new NBTTagCompound();
 						tileEntity.writeToNBT(nbtTag);
-						blockWorld.setBlockTileEntity(blockX, blockY, blockZ, TileEntity.createAndLoadEntity(nbtTag));
+						blockWorld.setTileEntity(blockX, blockY, blockZ, TileEntity.createAndLoadEntity(nbtTag));
 					}
 					world.spawnEntityInWorld(entity);
 				}

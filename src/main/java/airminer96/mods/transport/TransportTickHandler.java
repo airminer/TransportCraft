@@ -7,11 +7,11 @@ import java.util.Map.Entry;
 
 import net.minecraftforge.common.DimensionManager;
 import airminer96.mods.transport.entity.EntityTransportBlock;
-import cpw.mods.fml.common.IScheduledTickHandler;
-import cpw.mods.fml.common.TickType;
+//import cpw.mods.fml.common.IScheduledTickHandler;
+//import cpw.mods.fml.common.TickType;
 
-public class TransportTickHandler implements IScheduledTickHandler {
-
+public class TransportTickHandler { /* implements IScheduledTickHandler {
+	
 	@Override
 	public void tickStart(EnumSet<TickType> type, Object... tickData) {
 		Transport.logger.info("TICK");
@@ -48,4 +48,5 @@ public class TransportTickHandler implements IScheduledTickHandler {
 		return 1200;
 	}
 
+	*/
 }

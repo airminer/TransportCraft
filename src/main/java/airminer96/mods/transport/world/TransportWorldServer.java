@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import airminer96.mods.transport.Transport;
-import net.minecraft.logging.ILogAgent;
+//import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldManager;
@@ -21,8 +21,8 @@ public class TransportWorldServer extends WorldServerMulti {
 
 	public static final ArrayList<Integer> deleteQueue = new ArrayList<Integer>();
 
-	public TransportWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2iSaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, WorldServer par6WorldServer, Profiler par7Profiler, ILogAgent par8iLogAgent) {
-		super(par1MinecraftServer, par2iSaveHandler, par3Str, par4, par5WorldSettings, par6WorldServer, par7Profiler, par8iLogAgent);
+	public TransportWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2iSaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, WorldServer par6WorldServer, Profiler par7Profiler) {
+		super(par1MinecraftServer, par2iSaveHandler, par3Str, par4, par5WorldSettings, par6WorldServer, par7Profiler);
 	}
 
 	@Override
@@ -67,18 +67,18 @@ public class TransportWorldServer extends WorldServerMulti {
 			System.err.println("Cannot Hotload Dim: " + e.getMessage());
 			return; // If a provider hasn't been registered then we can't hotload the dim
 		}
-		MinecraftServer mcServer = overworld.getMinecraftServer();
+		MinecraftServer mcServer = overworld.func_73046_m();
 		ISaveHandler savehandler = overworld.getSaveHandler();
 		WorldSettings worldSettings = new WorldSettings(overworld.getWorldInfo());
 
-		WorldServer world = (dim == 0 ? overworld : new TransportWorldServer(mcServer, savehandler, overworld.getWorldInfo().getWorldName(), dim, worldSettings, overworld, mcServer.theProfiler, overworld.getWorldLogAgent()));
+		WorldServer world = (dim == 0 ? overworld : new TransportWorldServer(mcServer, savehandler, overworld.getWorldInfo().getWorldName(), dim, worldSettings, overworld, mcServer.theProfiler));
 		world.addWorldAccess(new WorldManager(mcServer, world));
 		MinecraftForge.EVENT_BUS.post(new WorldEvent.Load(world));
 		if (!mcServer.isSinglePlayer()) {
 			world.getWorldInfo().setGameType(mcServer.getGameType());
 		}
 
-		mcServer.setDifficultyForAllWorlds(mcServer.getDifficulty());
+		mcServer.func_147139_a(mcServer.func_147135_j());
 	}
 
 }

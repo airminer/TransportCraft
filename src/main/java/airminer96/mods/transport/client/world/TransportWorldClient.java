@@ -11,7 +11,7 @@ import net.minecraft.world.storage.WorldInfo;
 public class TransportWorldClient extends WorldClient {
 
 	public TransportWorldClient(int dim) {
-		super(TransportNetClientHandler.getNewInstance(), getWorldSettings(), dim, Minecraft.getMinecraft().theWorld.difficultySetting, Minecraft.getMinecraft().mcProfiler, Minecraft.getMinecraft().getLogAgent());
+		super(TransportNetClientHandler.getNewInstance(), getWorldSettings(), dim, Minecraft.getMinecraft().theWorld.difficultySetting, Minecraft.getMinecraft().mcProfiler);
 	}
 
 	private static WorldSettings getWorldSettings() {

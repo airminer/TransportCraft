@@ -1,5 +1,7 @@
 package airminer96.mods.transport.entity;
 
+import io.netty.buffer.ByteBuf;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -117,7 +119,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 				worldClients.remove(id);
 			} else if (checkOthers) {
 				for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt().get(id).clone()) {
-					if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
+					if (entity.worldObj.getEntityByID(entity.getEntityId()) != entity) {
 						entity.dissociateDim(false);
 						if (!idToEnt().containsKey(entity.id) && entity.id != id) {
 							DimensionManager.unloadWorld(entity.dimID);
@@ -253,7 +255,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public AxisAlignedBB getBoundingBox() {
-		Block block = Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)];
+		Block block = getTransportWorld().getBlock(blockX, blockY, blockZ);
 		if (block != null && block.getCollisionBoundingBoxFromPool(getTransportWorld(), blockX, blockY, blockZ) != null) {
 			setSize((float) (block.getBlockBoundsMaxX() - block.getBlockBoundsMinX()), (float) (block.getBlockBoundsMaxY() - block.getBlockBoundsMinY()));
 			return block.getCollisionBoundingBoxFromPool(getTransportWorld(), blockX, blockY, blockZ).getOffsetBoundingBox(posX - blockX - 0.5, posY - blockY, posZ - blockZ - 0.5);
@@ -286,7 +288,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	 */
 	@Override
 	public boolean interactFirst(EntityPlayer par1EntityPlayer) {
-		Block block = Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)];
+		Block block = getTransportWorld().getBlock(blockX, blockY, blockZ);
 		// ItemStack item = par1EntityPlayer.getCurrentEquippedItem();
 		// return
 		// Minecraft.getMinecraft().playerController.onPlayerRightClick(par1EntityPlayer,
@@ -322,15 +324,15 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	@Override
-	public void writeSpawnData(ByteArrayDataOutput data) {
-		data.writeInt(id);
-		data.writeInt(dimID);
-		data.writeInt(blockX);
-		data.writeInt(blockY);
-		data.writeInt(blockZ);
+	public void writeSpawnData(ByteBuf buffer) {
+		buffer.writeInt(id);
+		buffer.writeInt(dimID);
+		buffer.writeInt(blockX);
+		buffer.writeInt(blockY);
+		buffer.writeInt(blockZ);
 
-		data.writeInt(getTransportWorld().getBlockId(blockX, blockY, blockZ));
-		data.writeInt(getTransportWorld().getBlockMetadata(blockX, blockY, blockZ));
+		buffer.writeInt(Block.getIdFromBlock(getTransportWorld().getBlock(blockX, blockY, blockZ)));
+		buffer.writeInt(getTransportWorld().getBlockMetadata(blockX, blockY, blockZ));
 
 		/*
 		 * try {
@@ -342,12 +344,12 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	@Override
-	public void readSpawnData(ByteArrayDataInput data) {
-		id = data.readInt();
-		dimID = data.readInt();
-		blockX = data.readInt();
-		blockY = data.readInt();
-		blockZ = data.readInt();
+	public void readSpawnData(ByteBuf additionalData) {
+		id = additionalData.readInt();
+		dimID = additionalData.readInt();
+		blockX = additionalData.readInt();
+		blockY = additionalData.readInt();
+		blockZ = additionalData.readInt();
 
 		TransportWorldClient world = (TransportWorldClient) getTransportWorld();
 		if (world.getChunkProvider().provideChunk(blockX >> 4, blockZ >> 4).isEmpty()) {
@@ -363,7 +365,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		} else if ((blockZ & 15) == 15 && world.getChunkProvider().provideChunk(blockX >> 4, (blockZ >> 4) + 1).isEmpty()) {
 			world.doPreChunk(blockX >> 4, (blockZ >> 4) + 1, true);
 		}
-		getTransportWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
+		getTransportWorld().setBlock(blockX, blockY, blockZ, Block.getBlockById(additionalData.readInt()), additionalData.readInt(), 0);
 
 		/*
 		 * WorldClient worldClient = ObfuscationReflectionHelper.getPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), "worldClient");
