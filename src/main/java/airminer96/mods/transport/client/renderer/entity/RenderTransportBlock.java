@@ -72,7 +72,7 @@ public class RenderTransportBlock extends Render {
 		tessellator.draw();
 		RenderHelper.enableStandardItemLighting();
 
-		MovingObjectPosition objectMouseOver = Minecraft.getMinecraft().objectMouseOver;
+		/*MovingObjectPosition objectMouseOver = Minecraft.getMinecraft().objectMouseOver;
 		if (objectMouseOver != null && objectMouseOver.entityHit == par1EntityTransportBlock) {
 
 			WorldClient theWorld = Minecraft.getMinecraft().theWorld;
@@ -86,7 +86,7 @@ public class RenderTransportBlock extends Render {
 			GL11.glPopMatrix();
 
 			Minecraft.getMinecraft().renderGlobal.setWorldAndLoadRenderers(theWorld);
-		}
+		}*/
 
 		GL11.glPopMatrix();
 
