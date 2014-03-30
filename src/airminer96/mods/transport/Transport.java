@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import net.minecraft.command.ServerCommandManager;
 import net.minecraftforge.common.DimensionManager;
+import airminer96.mods.transport.client.network.TransportClientPacketHandler;
 import airminer96.mods.transport.command.CommandTransport;
 import airminer96.mods.transport.command.CommandWorld;
 import airminer96.mods.transport.entity.EntityTransportBlock;
@@ -20,12 +21,13 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
+import cpw.mods.fml.common.network.NetworkMod.SidedPacketHandler;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.TickRegistry;
 import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = Transport.ID, name = Transport.ID, version = Transport.VERSION)
-@NetworkMod(clientSideRequired = true, serverSideRequired = false, channels = { Transport.ID })
+@NetworkMod(clientSideRequired = true, serverSideRequired = false, channels={Transport.ID}, packetHandler=TransportClientPacketHandler.class)
 public class Transport {
 
 	public static final String ID = "TransportCraft";
