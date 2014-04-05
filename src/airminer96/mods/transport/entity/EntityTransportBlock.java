@@ -59,12 +59,14 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		super(entityWorld);
 
 		this.id = id;
-		getTransportWorld();
-		Transport.logger.info("EntityTransportBlock id " + id + " spawned");
-
 		this.blockX = blockX;
 		this.blockY = blockY;
 		this.blockZ = blockZ;
+		
+		World world = getTransportWorld();
+		if (world instanceof TransportWorldServer) {
+			((TransportWorldServer) world).loadChunk(blockX >> 4, blockZ >> 4);
+		}
 
 		preventEntitySpawning = true;
 		setSize(1F, 1F);
@@ -318,7 +320,10 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		blockX = par1NBTTagCompound.getInteger("BlockX");
 		blockY = par1NBTTagCompound.getInteger("BlockY");
 		blockZ = par1NBTTagCompound.getInteger("BlockZ");
-
+		World world = getTransportWorld();
+		if (world instanceof TransportWorldServer) {
+			((TransportWorldServer) world).loadChunk(blockX >> 4, blockZ >> 4);
+		}
 	}
 
 	@Override
@@ -331,14 +336,6 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 		data.writeInt(getTransportWorld().getBlockId(blockX, blockY, blockZ));
 		data.writeInt(getTransportWorld().getBlockMetadata(blockX, blockY, blockZ));
-
-		/*
-		 * try {
-		 * (new Packet51MapChunk(getTransportWorld().getWorld().getChunkFromChunkCoords(chunkCoordX, chunkCoordZ), true, 0)).writePacketData(data);
-		 * } catch (IOException e) {
-		 * e.printStackTrace();
-		 * }
-		 */
 	}
 
 	@Override
@@ -364,18 +361,6 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 			world.doPreChunk(blockX >> 4, (blockZ >> 4) + 1, true);
 		}
 		getTransportWorld().setBlock(blockX, blockY, blockZ, data.readInt(), data.readInt(), 0);
-
-		/*
-		 * WorldClient worldClient = ObfuscationReflectionHelper.getPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), "worldClient");
-		 * ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), getTransportWorld().getWorld(), "worldClient");
-		 * Packet51MapChunk packet = new Packet51MapChunk();
-		 * try {
-		 * packet.readPacketData(data);
-		 * Minecraft.getMinecraft().getNetHandler().handleMapChunk(packet);
-		 * } catch (IOException e) {
-		 * }
-		 * ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, Minecraft.getMinecraft().getNetHandler(), worldClient, "worldClient");
-		 */
 	}
 
 	@Override

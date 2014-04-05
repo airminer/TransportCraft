@@ -1,6 +1,8 @@
 package airminer96.mods.transport.client.network;
 
 import java.io.IOException;
+
+import cpw.mods.fml.common.ObfuscationReflectionHelper;
 import sun.reflect.ReflectionFactory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.NetClientHandler;
@@ -16,6 +18,7 @@ public class TransportNetClientHandler extends NetClientHandler {
 	public static TransportNetClientHandler getNewInstance() {
 		try {
 			TransportNetClientHandler instance = (TransportNetClientHandler) ReflectionFactory.getReflectionFactory().newConstructorForSerialization(TransportNetClientHandler.class, Object.class.getConstructor()).newInstance();
+			ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, instance, Minecraft.getMinecraft(), "mc");
 			instance.mapStorage = new MapStorage((ISaveHandler) null);
 			return instance;
 		} catch (Exception e) {

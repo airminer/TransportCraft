@@ -1,5 +1,6 @@
 package airminer96.mods.transport.world;
 
+import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,6 +10,8 @@ import airminer96.mods.transport.network.TransportNetServerHandler;
 import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.PlayerInstance;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldManager;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldServerMulti;
@@ -24,13 +27,30 @@ public class TransportWorldServer extends WorldServerMulti {
 
 	public static final ArrayList<Integer> deleteQueue = new ArrayList<Integer>();
 
+	private FakePlayer fakePlayer;
+	
+	private ArrayList<Point> loadedChunks = new ArrayList<Point>();
+	
 	public TransportWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2iSaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, WorldServer par6WorldServer, Profiler par7Profiler, ILogAgent par8iLogAgent) {
 		super(par1MinecraftServer, par2iSaveHandler, par3Str, par4, par5WorldSettings, par6WorldServer, par7Profiler, par8iLogAgent);
-		FakePlayer fakePlayer = FakePlayerFactory.get(this, "["+Transport.ID+"]");
+		fakePlayer = FakePlayerFactory.get(this, "["+Transport.ID+"]");
 		new TransportNetServerHandler(par1MinecraftServer, fakePlayer);
-		getPlayerManager().getOrCreateChunkWatcher(0, 0, true).addPlayer(fakePlayer);
-		fakePlayer.loadedChunks.clear();
 	}
+	
+	public void loadChunk(int x, int z) {
+		Point p = new Point(x,z);
+		if (!loadedChunks.contains(p)) {
+			getPlayerManager().getOrCreateChunkWatcher(x, z, true).addPlayer(fakePlayer);
+			fakePlayer.loadedChunks.clear();
+			loadedChunks.add(p);
+		}
+	}
+	
+	@Override
+	public boolean setBlock(int par1, int par2, int par3, int par4, int par5, int par6)
+    {		
+		return super.setBlock(par1, par2, par3, par4, par5, par6);
+    }
 
 	@Override
 	public void flush() {
