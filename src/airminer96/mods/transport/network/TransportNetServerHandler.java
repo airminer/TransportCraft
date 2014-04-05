@@ -7,22 +7,17 @@ import java.io.IOException;
 import cpw.mods.fml.common.network.PacketDispatcher;
 import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.entity.EntityTransportBlock;
-import net.minecraft.client.Minecraft;
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.INetworkManager;
 import net.minecraft.network.NetServerHandler;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.Packet250CustomPayload;
 import net.minecraft.network.packet.Packet3Chat;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ReportedException;
 
 public class TransportNetServerHandler extends NetServerHandler {
 
 	public TransportNetServerHandler(MinecraftServer par1MinecraftServer, EntityPlayerMP par3EntityPlayerMP) {
-		super(par1MinecraftServer, new DummyNetworkManager() , par3EntityPlayerMP);
+		super(par1MinecraftServer, new DummyNetworkManager(), par3EntityPlayerMP);
 	}
 
 	@Override
@@ -30,7 +25,7 @@ public class TransportNetServerHandler extends NetServerHandler {
 	{
 		if (par1Packet instanceof Packet3Chat)
 		{
-			Packet3Chat packet3chat = (Packet3Chat)par1Packet;
+			Packet3Chat packet3chat = (Packet3Chat) par1Packet;
 			int i = this.playerEntity.getChatVisibility();
 
 			if (i == 2)
@@ -50,9 +45,9 @@ public class TransportNetServerHandler extends NetServerHandler {
 
 		try {
 			Integer id = EntityTransportBlock.dimToId.get(playerEntity.worldObj.provider.dimensionId);
-			if(id != null) {
+			if (id != null) {
 				dataoutput.writeInt(id);
-				par1Packet.writePacket(par1Packet, new DataOutputStream(outputStream));
+				Packet.writePacket(par1Packet, new DataOutputStream(outputStream));
 				PacketDispatcher.sendPacketToAllPlayers(new Packet250CustomPayload(Transport.ID, outputStream.toByteArray()));
 			}
 		} catch (IOException e) {

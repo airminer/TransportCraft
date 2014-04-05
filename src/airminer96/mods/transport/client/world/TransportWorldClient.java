@@ -5,7 +5,6 @@ import airminer96.mods.transport.client.network.TransportNetClientHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.NetClientHandler;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.WorldSettings;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.storage.WorldInfo;
@@ -13,11 +12,11 @@ import net.minecraft.world.storage.WorldInfo;
 public class TransportWorldClient extends WorldClient {
 
 	public TransportNetClientHandler sendQueue;
-	
+
 	public TransportWorldClient(int dim) {
 		super(TransportNetClientHandler.getNewInstance(), getWorldSettings(), dim, Minecraft.getMinecraft().theWorld.difficultySetting, Minecraft.getMinecraft().mcProfiler, Minecraft.getMinecraft().getLogAgent());
 		sendQueue = ObfuscationReflectionHelper.getPrivateValue(WorldClient.class, this, "sendQueue");
-		ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, sendQueue, this , "worldClient");
+		ObfuscationReflectionHelper.setPrivateValue(NetClientHandler.class, sendQueue, this, "worldClient");
 	}
 
 	private static WorldSettings getWorldSettings() {

@@ -3,9 +3,6 @@ package airminer96.mods.transport.client.network;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
-
-import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.client.world.TransportWorldClient;
 import airminer96.mods.transport.entity.EntityTransportBlock;
 import net.minecraft.client.Minecraft;
@@ -23,7 +20,7 @@ public class TransportClientPacketHandler implements IPacketHandler {
 		DataInputStream dataInput = new DataInputStream(new ByteArrayInputStream(packet.data));
 		try {
 			TransportWorldClient world = (TransportWorldClient) EntityTransportBlock.worldClients.get(dataInput.readInt());
-			if(world != null) {
+			if (world != null) {
 				Packet innerPacket = Packet.getNewPacket(Minecraft.getMinecraft().getLogAgent(), dataInput.readUnsignedByte());
 				innerPacket.readPacketData(dataInput);
 				WorldClient theWorld = Minecraft.getMinecraft().theWorld;

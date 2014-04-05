@@ -17,17 +17,11 @@ import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteArrayDataOutput;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EntityDamageSource;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
@@ -62,7 +56,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		this.blockX = blockX;
 		this.blockY = blockY;
 		this.blockZ = blockZ;
-		
+
 		World world = getTransportWorld();
 		if (world instanceof TransportWorldServer) {
 			((TransportWorldServer) world).loadChunk(blockX >> 4, blockZ >> 4);
@@ -86,7 +80,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	public HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt() {
-		if(worldObj.isRemote) {
+		if (worldObj.isRemote) {
 			return idToEntClient;
 		} else {
 			return idToEntServer;
@@ -201,25 +195,25 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		} else {
 			if (!isDead && !worldObj.isRemote) {
 				/*
-				TileEntity tileEntity = getTransportWorld().getBlockTileEntity(blockX, blockY, blockZ);
-				Transport.logger.info("TileEntity " + tileEntity);
-				if(tileEntity != null && tileEntity instanceof IInventory) {
-					for(int i = 0; i < ((IInventory) tileEntity).getSizeInventory(); i++) {
-						ItemStack stack = ((IInventory) tileEntity).getStackInSlot(i);
-						Transport.logger.info("ItemStack " + stack);
-						if(stack != null) {
-							Transport.logger.info("SPAWN");
-							EntityItem item = new EntityItem(worldObj, posX, posY, posZ, stack.copy());
-							worldObj.spawnEntityInWorld(item);
-						}
-					}
-				}
-				for(ItemStack stack : Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)].getBlockDropped(getTransportWorld(), blockX, blockY, blockZ, getTransportWorld().getBlockMetadata(blockX, blockY, blockZ), 0)) {
-					if(stack != null) {
-						EntityItem item = new EntityItem(worldObj, posX, posY, posZ, stack);
-						worldObj.spawnEntityInWorld(item);
-					}
-				}
+				 * TileEntity tileEntity = getTransportWorld().getBlockTileEntity(blockX, blockY, blockZ);
+				 * Transport.logger.info("TileEntity " + tileEntity);
+				 * if(tileEntity != null && tileEntity instanceof IInventory) {
+				 * for(int i = 0; i < ((IInventory) tileEntity).getSizeInventory(); i++) {
+				 * ItemStack stack = ((IInventory) tileEntity).getStackInSlot(i);
+				 * Transport.logger.info("ItemStack " + stack);
+				 * if(stack != null) {
+				 * Transport.logger.info("SPAWN");
+				 * EntityItem item = new EntityItem(worldObj, posX, posY, posZ, stack.copy());
+				 * worldObj.spawnEntityInWorld(item);
+				 * }
+				 * }
+				 * }
+				 * for(ItemStack stack : Block.blocksList[getTransportWorld().getBlockId(blockX, blockY, blockZ)].getBlockDropped(getTransportWorld(), blockX, blockY, blockZ, getTransportWorld().getBlockMetadata(blockX, blockY, blockZ), 0)) {
+				 * if(stack != null) {
+				 * EntityItem item = new EntityItem(worldObj, posX, posY, posZ, stack);
+				 * worldObj.spawnEntityInWorld(item);
+				 * }
+				 * }
 				 */
 				getTransportWorld().setBlockToAir(blockX, blockY, blockZ);
 				setDead();

@@ -9,16 +9,20 @@ import net.minecraft.network.packet.Packet;
 public class DummyNetworkManager implements INetworkManager {
 
 	@Override
-	public void setNetHandler(NetHandler nethandler) {}
+	public void setNetHandler(NetHandler nethandler) {
+	}
 
 	@Override
-	public void addToSendQueue(Packet packet) {}
+	public void addToSendQueue(Packet packet) {
+	}
 
 	@Override
-	public void wakeThreads() {}
-	
+	public void wakeThreads() {
+	}
+
 	@Override
-	public void processReadPackets() {}
+	public void processReadPackets() {
+	}
 
 	@Override
 	public SocketAddress getSocketAddress() {
@@ -26,7 +30,8 @@ public class DummyNetworkManager implements INetworkManager {
 	}
 
 	@Override
-	public void serverShutdown() {}
+	public void serverShutdown() {
+	}
 
 	@Override
 	public int packetSize() {
@@ -34,9 +39,11 @@ public class DummyNetworkManager implements INetworkManager {
 	}
 
 	@Override
-	public void networkShutdown(String s, Object... var2) {}
+	public void networkShutdown(String s, Object... var2) {
+	}
 
 	@Override
-	public void closeConnections() {}
+	public void closeConnections() {
+	}
 
 }
