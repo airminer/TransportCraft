@@ -17,7 +17,6 @@ import net.minecraft.world.WorldSettings;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.FakePlayer;
-import net.minecraftforge.common.FakePlayerFactory;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 
@@ -31,7 +30,7 @@ public class TransportWorldServer extends WorldServerMulti {
 
 	public TransportWorldServer(MinecraftServer par1MinecraftServer, ISaveHandler par2iSaveHandler, String par3Str, int par4, WorldSettings par5WorldSettings, WorldServer par6WorldServer, Profiler par7Profiler, ILogAgent par8iLogAgent) {
 		super(par1MinecraftServer, par2iSaveHandler, par3Str, par4, par5WorldSettings, par6WorldServer, par7Profiler, par8iLogAgent);
-		fakePlayer = FakePlayerFactory.get(this, "[" + Transport.ID + "]");
+		fakePlayer = new FakePlayer(this, "[" + Transport.ID + "]");
 		new TransportNetServerHandler(par1MinecraftServer, fakePlayer);
 	}
 
