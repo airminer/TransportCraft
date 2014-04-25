@@ -8,7 +8,6 @@ import java.util.HashMap;
 import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.client.world.TransportWorldClient;
 import airminer96.mods.transport.world.TransportWorldServer;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -125,7 +124,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 	}
 
 	public World getTransportWorld() {
-		if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+		if (worldObj.isRemote) {
 			if (worldClient == null) {
 				if (worldClients.get(id) == null) {
 					try {
