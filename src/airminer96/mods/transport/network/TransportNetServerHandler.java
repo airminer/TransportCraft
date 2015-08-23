@@ -47,7 +47,8 @@ public class TransportNetServerHandler extends NetServerHandler {
 			Integer id = EntityTransportBlock.dimToId.get(playerEntity.worldObj.provider.dimensionId);
 			if (id != null) {
 				dataoutput.writeInt(id);
-				Packet.writePacket(par1Packet, new DataOutputStream(outputStream));
+				Packet.writePacket(par1Packet, dataoutput);
+				dataoutput.close();
 				PacketDispatcher.sendPacketToAllPlayers(new Packet250CustomPayload(Transport.ID, outputStream.toByteArray()));
 			}
 		} catch (IOException e) {
