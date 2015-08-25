@@ -26,13 +26,13 @@ public class RenderTransportBlock extends Render {
 	/**
 	 * The actual render method that is used in doRender
 	 */
-	public void doRenderAircraftBlock(EntityTransportBlock par1EntityTransportBlock, double par2, double par4, double par6, float par8, float par9) {
+	public void doRenderTransportBlock(EntityTransportBlock par1EntityTransportBlock, double par2, double par4, double par6, float par8, float par9) {
 
 		renderBlocks = new RenderBlocks(par1EntityTransportBlock.getTransportWorld());
 		Block block = Block.blocksList[par1EntityTransportBlock.getTransportWorld().getBlockId(par1EntityTransportBlock.blockX, par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ)];
 
-		// System.out.println(par1EntityAircraftBlock.blockWorld.getBlockId(par1EntityAircraftBlock.blockX,
-		// par1EntityAircraftBlock.blockY, par1EntityAircraftBlock.blockZ));
+		// System.out.println(par1EntityTransportBlock.blockWorld.getBlockId(par1EntityTransportBlock.blockX,
+		// par1EntityTransportBlock.blockY, par1EntityTransportBlock.blockZ));
 
 		if (block == null)
 			return;
@@ -102,7 +102,7 @@ public class RenderTransportBlock extends Render {
 	 */
 	@Override
 	public void doRender(Entity par1Entity, double par2, double par4, double par6, float par8, float par9) {
-		doRenderAircraftBlock((EntityTransportBlock) par1Entity, par2, par4, par6, par8, par9);
+		doRenderTransportBlock((EntityTransportBlock) par1Entity, par2, par4, par6, par8, par9);
 	}
 
 	@Override

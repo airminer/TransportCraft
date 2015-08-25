@@ -26,7 +26,7 @@ public class TransportNetServerHandler extends NetServerHandler {
 		if (par1Packet instanceof Packet3Chat)
 		{
 			Packet3Chat packet3chat = (Packet3Chat) par1Packet;
-			int i = this.playerEntity.getChatVisibility();
+			int i = playerEntity.getChatVisibility();
 
 			if (i == 2)
 			{
