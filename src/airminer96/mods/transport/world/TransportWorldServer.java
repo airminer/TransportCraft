@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import airminer96.mods.transport.Transport;
+import airminer96.mods.transport.entity.EntityTransportBlock;
 import airminer96.mods.transport.network.TransportNetServerHandler;
 import net.minecraft.logging.ILogAgent;
 import net.minecraft.profiler.Profiler;
@@ -46,6 +47,24 @@ public class TransportWorldServer extends WorldServerMulti {
 	@Override
 	public boolean setBlock(int par1, int par2, int par3, int par4, int par5, int par6)
 	{
+		TransportBlockContainer bc = EntityTransportBlock.idToEntServer.get(EntityTransportBlock.dimToId.get(provider.dimensionId));
+		if (bc != null) {
+			if (par4 == 0) {
+				EntityTransportBlock block = bc.getBlock(par1, par2, par3);
+				if (block != null && !block.isDead) {
+					block.setDead();
+				}
+			} else if (getBlockId(par1, par2, par3) == 0) {
+				EntityTransportBlock origin = bc.getBlocks().iterator().next();
+				EntityTransportBlock entity = new EntityTransportBlock(origin.worldObj, origin.id, par1, par2, par3);
+				entity.setPosition(origin.posX - origin.blockX + par1, origin.posY - origin.blockY + par2, origin.posZ - origin.blockZ + par3);
+				origin.worldObj.spawnEntityInWorld(entity);
+			}
+		}
+		return super.setBlock(par1, par2, par3, par4, par5, par6);
+	}
+
+	public boolean setBlockWithoutEntity(int par1, int par2, int par3, int par4, int par5, int par6) {
 		return super.setBlock(par1, par2, par3, par4, par5, par6);
 	}
 

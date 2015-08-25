@@ -3,6 +3,7 @@ package airminer96.mods.transport.command;
 import java.util.HashMap;
 
 import airminer96.mods.transport.entity.EntityTransportBlock;
+import airminer96.mods.transport.world.TransportWorldServer;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -72,7 +73,7 @@ public class CommandTransport extends CommandBase {
 	private void transformCuboid(World world, int xa, int ya, int za, int xb, int yb, int zb) {
 
 		int id = EntityTransportBlock.getNextFreeID();
-		World blockWorld = null;
+		TransportWorldServer blockWorld = null;
 
 		int x1, y1, z1, x2, y2, z2;
 
@@ -106,14 +107,15 @@ public class CommandTransport extends CommandBase {
 				int blockY = 128 + y - (y1 + y2) / 2;
 				for (int z = z1; z <= z2; z++) {
 					int blockZ = z - (z1 + z2) / 2;
+					if (world.getBlockId(x, y, z) == 0)
+						continue;
 					EntityTransportBlock entity = new EntityTransportBlock(world, id, blockX, blockY, blockZ);
 					entity.setPosition(x + 0.5, y - y1 + y2 + 1, z + 0.5);
 					if (blockWorld == null) {
-						blockWorld = entity.getTransportWorld();
+						blockWorld = (TransportWorldServer) entity.getTransportWorld();
 					}
 					TileEntity tileEntity = world.getBlockTileEntity(x, y, z);
-					blockWorld.setBlock(blockX, blockY, blockZ, world.getBlockId(x, y, z));
-					blockWorld.setBlockMetadataWithNotify(blockX, blockY, blockZ, world.getBlockMetadata(x, y, z), 3);
+					blockWorld.setBlockWithoutEntity(blockX, blockY, blockZ, world.getBlockId(x, y, z), world.getBlockMetadata(x, y, z), 3);
 					if (tileEntity != null) {
 						NBTTagCompound nbtTag = new NBTTagCompound();
 						tileEntity.writeToNBT(nbtTag);
