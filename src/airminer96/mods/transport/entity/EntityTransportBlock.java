@@ -1,12 +1,12 @@
 package airminer96.mods.transport.entity;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 
 import airminer96.mods.transport.Transport;
 import airminer96.mods.transport.client.world.TransportWorldClient;
+import airminer96.mods.transport.world.TransportBlockContainer;
 import airminer96.mods.transport.world.TransportWorldServer;
 import cpw.mods.fml.common.registry.IEntityAdditionalSpawnData;
 import cpw.mods.fml.relauncher.Side;
@@ -30,8 +30,8 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	public static HashMap<Integer, Integer> idToDim = new HashMap<Integer, Integer>();
 	public static HashMap<Integer, Integer> dimToId = new HashMap<Integer, Integer>();
-	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEntServer = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
-	public static HashMap<Integer, ArrayList<EntityTransportBlock>> idToEntClient = new HashMap<Integer, ArrayList<EntityTransportBlock>>();
+	public static HashMap<Integer, TransportBlockContainer> idToEntServer = new HashMap<Integer, TransportBlockContainer>();
+	public static HashMap<Integer, TransportBlockContainer> idToEntClient = new HashMap<Integer, TransportBlockContainer>();
 	public static HashMap<Integer, World> worldClients = new HashMap<Integer, World>();
 
 	public int id;
@@ -78,7 +78,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 		}
 	}
 
-	public HashMap<Integer, ArrayList<EntityTransportBlock>> idToEnt() {
+	public HashMap<Integer, TransportBlockContainer> idToEnt() {
 		if (worldObj.isRemote) {
 			return idToEntClient;
 		} else {
@@ -88,7 +88,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 
 	public void associateDim(int dim) {
 		if (!idToEnt().containsKey(id)) {
-			idToEnt().put(id, new ArrayList<EntityTransportBlock>());
+			idToEnt().put(id, new TransportBlockContainer());
 			idToDim.put(id, dim);
 			dimToId.put(dim, id);
 		}
@@ -111,7 +111,7 @@ public class EntityTransportBlock extends Entity implements IEntityAdditionalSpa
 				idToDim.remove(id);
 				worldClients.remove(id);
 			} else if (checkOthers) {
-				for (EntityTransportBlock entity : (ArrayList<EntityTransportBlock>) idToEnt().get(id).clone()) {
+				for (EntityTransportBlock entity : idToEnt().get(id).getBlocks()) {
 					if (entity.worldObj.getEntityByID(entity.entityId) != entity) {
 						entity.dissociateDim(false);
 						if (!idToEnt().containsKey(entity.id) && entity.id != id) {
