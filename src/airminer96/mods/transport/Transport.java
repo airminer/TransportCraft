@@ -4,10 +4,12 @@ import java.util.logging.Logger;
 
 import net.minecraft.command.ServerCommandManager;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.common.MinecraftForge;
 import airminer96.mods.transport.client.network.TransportClientPacketHandler;
 import airminer96.mods.transport.command.CommandTransport;
 import airminer96.mods.transport.command.CommandWorld;
 import airminer96.mods.transport.entity.EntityTransportBlock;
+import airminer96.mods.transport.entity.TransportChunkUnloadHandler;
 import airminer96.mods.transport.world.TransportWorldProvider;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
@@ -23,8 +25,6 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkMod;
 import cpw.mods.fml.common.network.NetworkMod.SidedPacketHandler;
 import cpw.mods.fml.common.registry.EntityRegistry;
-import cpw.mods.fml.common.registry.TickRegistry;
-import cpw.mods.fml.relauncher.Side;
 
 @Mod(modid = Transport.ID, name = Transport.ID, version = Transport.VERSION)
 @NetworkMod(clientSideRequired = true, serverSideRequired = false, clientPacketHandlerSpec = @SidedPacketHandler(channels = { Transport.ID }, packetHandler = TransportClientPacketHandler.class))
@@ -57,7 +57,7 @@ public class Transport {
 		while (!DimensionManager.registerProviderType(providerID, TransportWorldProvider.class, true))
 			providerID++;
 		logger.info("TransportWorldProvider successfully registered with ID " + providerID);
-		TickRegistry.registerScheduledTickHandler(new TransportTickHandler(), Side.SERVER);
+		MinecraftForge.EVENT_BUS.register(new TransportChunkUnloadHandler());
 	}
 
 	@EventHandler
