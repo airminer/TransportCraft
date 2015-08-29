@@ -9,7 +9,7 @@ import airminer96.mods.transport.client.network.TransportClientPacketHandler;
 import airminer96.mods.transport.command.CommandTransport;
 import airminer96.mods.transport.command.CommandWorld;
 import airminer96.mods.transport.entity.EntityTransportBlock;
-import airminer96.mods.transport.entity.TransportChunkUnloadHandler;
+import airminer96.mods.transport.entity.TransportBlockEventHandler;
 import airminer96.mods.transport.world.TransportWorldProvider;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
@@ -57,7 +57,7 @@ public class Transport {
 		while (!DimensionManager.registerProviderType(providerID, TransportWorldProvider.class, true))
 			providerID++;
 		logger.info("TransportWorldProvider successfully registered with ID " + providerID);
-		MinecraftForge.EVENT_BUS.register(new TransportChunkUnloadHandler());
+		MinecraftForge.EVENT_BUS.register(new TransportBlockEventHandler());
 	}
 
 	@EventHandler
